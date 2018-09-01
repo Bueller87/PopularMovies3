@@ -5,11 +5,15 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.GridView;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.example.android.popular_movies.model.DiscoverMoviesResult;
 import com.example.android.popular_movies.model.Movie;
@@ -28,26 +32,58 @@ import retrofit2.converter.gson.GsonConverterFactory;
  * A simple {@link Fragment} subclass.
  */
 public class MovieFragment extends Fragment {
-
-    @BindView(R.id.movies_grid)
+    View mFragmentView;
     GridView mGridView;
+    MovieApi.SortOptions mSortOptions = MovieApi.SortOptions.POPULAR;
+
     public MovieFragment() {
         // Required empty public constructor
     }
 
 
     @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.sort_menu, menu);
+        super.onCreateOptionsMenu(menu, inflater);
+    }
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle item selection
+        MovieApi.SortOptions sortOptions;
+        switch (item.getItemId()) {
+            case R.id.action_popular:
+                sortOptions = MovieApi.SortOptions.POPULAR;
+                Toast.makeText(getActivity(), "action_popular", Toast.LENGTH_SHORT).show();
+                break;
+            case R.id.action_highest_rated:
+                sortOptions = MovieApi.SortOptions.HIGHEST_RATED;
+                Toast.makeText(getActivity(), "action_highest_rated", Toast.LENGTH_SHORT).show();
+                break;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+
+        if (sortOptions != mSortOptions) {
+            mSortOptions = sortOptions;
+            refreshData(mSortOptions);
+        }
+        return true;
+    }
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        setHasOptionsMenu(true);
         // Inflate the layout for this fragment
         View fragmentView =  inflater.inflate(R.layout.fragment_movie, container, false);
-
-        refreshData();
+        mFragmentView = fragmentView;
+        mGridView = (GridView) mFragmentView.findViewById(R.id.movies_grid);
+        refreshData(mSortOptions);
         return  fragmentView;
     }
 
     private void createListAdapter(List<Movie> moviesList) {
-        MovieAdapter movieAdapter = new MovieAdapter(getContext(), moviesList);
+        MovieAdapter movieAdapter = new MovieAdapter(getActivity(), moviesList);
+
         mGridView.setAdapter(movieAdapter);
         mGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -57,7 +93,12 @@ public class MovieFragment extends Fragment {
         });
 
     }
-    private void refreshData() {
+
+    public void setActionBarTitle(String title) {
+        ((MainActivity) getActivity())
+                .setActionBarTitle(title);
+    }
+    private void refreshData(MovieApi.SortOptions sortOptions) {
 
         Call<DiscoverMoviesResult> popMoviesCall = null;
         try {
@@ -67,7 +108,14 @@ public class MovieFragment extends Fragment {
                     .build();
             MovieApi movieApi = retrofit.create(MovieApi.class);
 
-            popMoviesCall = movieApi.getPopularMovies();
+            if (sortOptions == MovieApi.SortOptions.POPULAR) {
+                popMoviesCall = movieApi.getPopularMovies();
+                setActionBarTitle(getResources().getString(R.string.popular_movies));
+            }
+            else {
+                popMoviesCall = movieApi.getTopRatedMovies();
+                setActionBarTitle(getResources().getString(R.string.highest_rated_movies));
+            }
         } catch (Exception e) {
             Log.d(MainActivity.DEBUG_TAG, String.format("Retrofit Error: %s", e.getMessage()));
             e.printStackTrace();
@@ -83,9 +131,10 @@ public class MovieFragment extends Fragment {
 
                                       if (response.isSuccessful() && moviesResult.getMovies() != null) {
                                           for (Movie movie : moviesResult.getMovies()) {
-                                              createListAdapter(moviesResult.getMovies());
+
                                               Log.d(MainActivity.DEBUG_TAG, movie.getTitle());
                                           }
+                                          createListAdapter(moviesResult.getMovies());
                                       } else {
                                           Log.d(MainActivity.DEBUG_TAG, "response.NOTSuccessful():" + response.code());
                                       }

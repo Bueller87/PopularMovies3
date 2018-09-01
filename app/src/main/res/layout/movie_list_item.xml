@@ -4,8 +4,8 @@
 
     <ImageView
         android:id="@+id/iv_movie_poster"
-        android:src="@drawable/ic_launcher_background"
-        android:scaleType="centerCrop"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:src="@drawable/film_poster_placeholder"
+        android:layout_margin="2dp"
+        android:layout_width="185dp"
+        android:layout_height="278dp" />
 </FrameLayout>

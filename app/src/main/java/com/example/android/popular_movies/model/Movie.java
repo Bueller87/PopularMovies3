@@ -93,7 +93,7 @@ public class Movie {
     public String getImageFullPath() {
         //TODO as api to retrieve base url from "Get API Configuration"
         //https://developers.themoviedb.org/3/configuration/get-api-configuration
-        String baseUrl = "https://image.tmdb.org/t/p/w500/";
+        String baseUrl = "https://image.tmdb.org/t/p/w185";
         return baseUrl + getPosterPath();
     }
     public Integer getVoteCount() {

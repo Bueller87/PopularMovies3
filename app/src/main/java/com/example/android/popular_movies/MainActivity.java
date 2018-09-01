@@ -15,12 +15,14 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class MainActivity extends AppCompatActivity {
     public final static String DEBUG_TAG = "LogTag";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+    }
 
-
-
+    public void setActionBarTitle(String title) {
+        getSupportActionBar().setTitle(title);
     }
 }
