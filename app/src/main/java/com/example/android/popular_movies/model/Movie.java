@@ -1,10 +1,13 @@
 package com.example.android.popular_movies.model;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import java.util.List;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-public class Movie {
+public class Movie implements Parcelable {
 
     @SerializedName("vote_count")
     @Expose
@@ -49,10 +52,40 @@ public class Movie {
     @Expose
     private String releaseDate;
 
-    /**
-     * No args constructor for use in serialization
-     *
-     */
+    public final static Parcelable.Creator<Movie> CREATOR = new Creator<Movie>() {
+
+
+        @SuppressWarnings({
+                "unchecked"
+        })
+        public Movie createFromParcel(Parcel in) {
+            return new Movie(in);
+        }
+
+        public Movie[] newArray(int size) {
+            return (new Movie[size]);
+        }
+
+    }
+            ;
+
+    protected Movie(Parcel in) {
+        this.voteCount = ((Integer) in.readValue((Integer.class.getClassLoader())));
+        this.id = ((Integer) in.readValue((Integer.class.getClassLoader())));
+        this.video = ((Boolean) in.readValue((Boolean.class.getClassLoader())));
+        this.voteAverage = ((Float) in.readValue((Float.class.getClassLoader())));
+        this.title = ((String) in.readValue((String.class.getClassLoader())));
+        this.popularity = ((Float) in.readValue((Float.class.getClassLoader())));
+        this.posterPath = ((String) in.readValue((String.class.getClassLoader())));
+        this.originalLanguage = ((String) in.readValue((String.class.getClassLoader())));
+        this.originalTitle = ((String) in.readValue((String.class.getClassLoader())));
+        //in.readList(this.genreIds, (java.lang.Integer.class.getClassLoader()));
+        this.backdropPath = ((String) in.readValue((String.class.getClassLoader())));
+        this.adult = ((Boolean) in.readValue((Boolean.class.getClassLoader())));
+        this.overview = ((String) in.readValue((String.class.getClassLoader())));
+        this.releaseDate = ((String) in.readValue((String.class.getClassLoader())));
+    }
+
 
 
     /**
@@ -208,7 +241,31 @@ public class Movie {
         this.releaseDate = releaseDate;
     }
 
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeValue(voteCount);
+        dest.writeValue(id);
+        dest.writeValue(video);
+        dest.writeValue(voteAverage);
+        dest.writeValue(title);
+        dest.writeValue(popularity);
+        dest.writeValue(posterPath);
+        dest.writeValue(originalLanguage);
+        dest.writeValue(originalTitle);
+        //dest.writeList(genreIds);
+        //dest.writeIntArray();
+        dest.writeValue(backdropPath);
+        dest.writeValue(adult);
+        dest.writeValue(overview);
+        dest.writeValue(releaseDate);
+    }
+
+    public int describeContents() {
+        return 0;
+    }
+
 }
+
+
 /*
 Use this tool offline: Maven plugin Gradle plugin Ant task CLI Java API
         © 2012-2016 Joe Littlejohn Bugs?

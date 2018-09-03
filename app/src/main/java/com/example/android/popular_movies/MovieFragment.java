@@ -1,6 +1,7 @@
 package com.example.android.popular_movies;
 
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -32,9 +33,12 @@ import retrofit2.converter.gson.GsonConverterFactory;
  * A simple {@link Fragment} subclass.
  */
 public class MovieFragment extends Fragment {
-    View mFragmentView;
-    GridView mGridView;
-    MovieApi.SortOptions mSortOptions = MovieApi.SortOptions.POPULAR;
+    public final static String MOVIE_OBJECT_TAG = "MovieParcel";
+    private View mFragmentView;
+    private GridView mGridView;
+    private List<Movie> mMoviesList;
+    private MovieApi.SortOptions mSortOptions = MovieApi.SortOptions.POPULAR;
+
 
     public MovieFragment() {
         // Required empty public constructor
@@ -83,12 +87,16 @@ public class MovieFragment extends Fragment {
 
     private void createListAdapter(List<Movie> moviesList) {
         MovieAdapter movieAdapter = new MovieAdapter(getActivity(), moviesList);
-
+        mMoviesList = moviesList;
         mGridView.setAdapter(movieAdapter);
         mGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 //TODO launch Details View Activity
+                Intent intent = new Intent(getActivity(), MovieDetailsActivity.class);
+                intent.putExtra(MovieFragment.MOVIE_OBJECT_TAG, mMoviesList.get(i));
+                startActivity(intent);
+
             }
         });
 
