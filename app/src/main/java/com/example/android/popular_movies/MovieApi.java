@@ -7,15 +7,15 @@ import retrofit2.http.GET;
 
 
 public interface MovieApi {
-    public enum SortOptions
-    {
-        POPULAR, HIGHEST_RATED
-    }
+    int SORTBY_UNDEFINED = 0;
+    int SORTBY_POPULAR = 1;
+    int SORTBY_HIGHEST_RATED = 2;
+
     String BASE_URL = "https://api.themoviedb.org/3/";
 
-    @GET("movie/popular?api_key=8137e80aa355d0aa982c215c3c009bdc")
+    @GET("movie/popular?api_key=")
     Call<DiscoverMoviesResult> getPopularMovies();
 
-    @GET("movie/top_rated?api_key=8137e80aa355d0aa982c215c3c009bdc")
+    @GET("movie/top_rated?api_key=")
     Call<DiscoverMoviesResult> getTopRatedMovies();
 }

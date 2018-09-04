@@ -11,12 +11,14 @@
             <item
                 android:id="@+id/action_popular"
                 android:title="@string/menu_popular"
+                android:orderInCategory="0"
                 app:showAsAction="never">
             </item>
 
             <item
                 android:id="@+id/action_highest_rated"
                 android:title="@string/menu_highest_rated"
+                android:orderInCategory="1"
                 app:showAsAction="never">
 
             </item>

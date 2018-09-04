@@ -1,3 +1,18 @@
 <resources>
     <dimen name="text_margin">16dp</dimen>
+    <dimen name="textsize_big">24sp</dimen>
+    <dimen name="textsize_small">14sp</dimen>
+    <dimen name="textsize_medium">18sp</dimen>
+    <dimen name="padding_top">16dp</dimen>
+    <dimen name="margin">16dp</dimen>
+    <dimen name="backdrop_height">150dp</dimen>
+    <dimen name="layout_height">800dp</dimen>
+    <dimen name="poster_width">111dp</dimen>
+    <dimen name="poster_height">172dp</dimen>
+    <dimen name="poster_margin_top">125dp</dimen>
+    <dimen name="details_view_height">120dp</dimen>
+    <dimen name="details_margin_end">112dp</dimen>
+    <dimen name="grid_poster_margin">2dp</dimen>
+    <dimen name="grid_poster_width">185dp</dimen>
+    <dimen name="grid_poster_height">278dp</dimen>
 </resources>

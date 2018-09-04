@@ -3,6 +3,9 @@ package com.example.android.popular_movies;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.design.widget.CoordinatorLayout;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -13,15 +16,15 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.GridView;
-import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.example.android.popular_movies.model.DiscoverMoviesResult;
 import com.example.android.popular_movies.model.Movie;
 
 import java.util.List;
+import java.util.Objects;
 
-import butterknife.BindView;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -34,10 +37,20 @@ import retrofit2.converter.gson.GsonConverterFactory;
  */
 public class MovieFragment extends Fragment {
     public final static String MOVIE_OBJECT_TAG = "MovieParcel";
-    private View mFragmentView;
+    public final static String SAVED_SORT_OPTIONS = "SavedSortOptions";
+    public final static String SAVED_SCROLL_POSITION = "SavedScrollPosition";
+    /*@BindView(R.id.movies_grid)*/
     private GridView mGridView;
+    private ProgressBar mProgressBar;
+    private View mFragmentView;
+    private Snackbar mSnackbar;
+    private MenuItem mPopularMenuItem;
+    private MenuItem mHighestRatedMenuItem;
+
     private List<Movie> mMoviesList;
-    private MovieApi.SortOptions mSortOptions = MovieApi.SortOptions.POPULAR;
+    private int mSortOptions = MovieApi.SORTBY_POPULAR;
+    private int mRestoredSearchOptions = MovieApi.SORTBY_UNDEFINED;
+    private int mScrollPosition = 0;
 
 
     public MovieFragment() {
@@ -48,45 +61,81 @@ public class MovieFragment extends Fragment {
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.sort_menu, menu);
+        mPopularMenuItem = menu.findItem(R.id.action_popular);
+        mHighestRatedMenuItem = menu.findItem(R.id.action_highest_rated);
         super.onCreateOptionsMenu(menu, inflater);
     }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle item selection
-        MovieApi.SortOptions sortOptions;
+        int sortOptions;
         switch (item.getItemId()) {
             case R.id.action_popular:
-                sortOptions = MovieApi.SortOptions.POPULAR;
-                Toast.makeText(getActivity(), "action_popular", Toast.LENGTH_SHORT).show();
+                sortOptions = MovieApi.SORTBY_POPULAR;
                 break;
             case R.id.action_highest_rated:
-                sortOptions = MovieApi.SortOptions.HIGHEST_RATED;
-                Toast.makeText(getActivity(), "action_highest_rated", Toast.LENGTH_SHORT).show();
+                sortOptions = MovieApi.SORTBY_HIGHEST_RATED;
                 break;
+            case R.id.action_sort:
+                try {
+                    if (mSortOptions == MovieApi.SORTBY_POPULAR) {
+                        mPopularMenuItem.setVisible(false);
+                        mHighestRatedMenuItem.setVisible(true);
+                    } else if (mSortOptions == MovieApi.SORTBY_HIGHEST_RATED) {
+                        mPopularMenuItem.setVisible(true);
+                        mHighestRatedMenuItem.setVisible(false);
+                    } else if (mSortOptions == MovieApi.SORTBY_UNDEFINED) { //this should could happen if no internet on startup
+                        mPopularMenuItem.setVisible(true);
+                        mHighestRatedMenuItem.setVisible(true);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                return super.onOptionsItemSelected(item);
             default:
                 return super.onOptionsItemSelected(item);
         }
 
         if (sortOptions != mSortOptions) {
+            mRestoredSearchOptions = mSortOptions;  //restore sort options in case of error
             mSortOptions = sortOptions;
+
+            mScrollPosition = 0;
             refreshData(mSortOptions);
         }
         return true;
     }
+
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        outState.putInt(SAVED_SORT_OPTIONS, mSortOptions);
+        outState.putInt(SAVED_SCROLL_POSITION, mGridView.getFirstVisiblePosition());
+        super.onSaveInstanceState(outState);
+    }
+
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         setHasOptionsMenu(true);
         // Inflate the layout for this fragment
-        View fragmentView =  inflater.inflate(R.layout.fragment_movie, container, false);
+        View fragmentView = inflater.inflate(R.layout.fragment_movie, container, false);
         mFragmentView = fragmentView;
-        mGridView = (GridView) mFragmentView.findViewById(R.id.movies_grid);
+        mGridView = fragmentView.findViewById(R.id.movies_grid);
+        mProgressBar = fragmentView.findViewById(R.id.progressBar);
+
+
+        if (savedInstanceState != null) {
+            mSortOptions = savedInstanceState.getInt(SAVED_SORT_OPTIONS);
+            mScrollPosition = savedInstanceState.getInt(SAVED_SCROLL_POSITION);
+        }
         refreshData(mSortOptions);
-        return  fragmentView;
+        return fragmentView;
     }
 
     private void createListAdapter(List<Movie> moviesList) {
-        MovieAdapter movieAdapter = new MovieAdapter(getActivity(), moviesList);
+        MovieAdapter movieAdapter = new MovieAdapter(Objects.requireNonNull(getActivity()), moviesList);
         mMoviesList = moviesList;
         mGridView.setAdapter(movieAdapter);
         mGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -96,17 +145,21 @@ public class MovieFragment extends Fragment {
                 Intent intent = new Intent(getActivity(), MovieDetailsActivity.class);
                 intent.putExtra(MovieFragment.MOVIE_OBJECT_TAG, mMoviesList.get(i));
                 startActivity(intent);
-
             }
         });
 
     }
 
     public void setActionBarTitle(String title) {
-        ((MainActivity) getActivity())
-                .setActionBarTitle(title);
+        try {
+            ((MainActivity) getActivity())
+                    .setActionBarTitle(title);
+        } catch (NullPointerException e) {
+            Log.e(MainActivity.DEBUG_TAG, "setActionBarTitle: NullPointer Exception");
+        }
     }
-    private void refreshData(MovieApi.SortOptions sortOptions) {
+
+    private void refreshData(int sortOptions) {
 
         Call<DiscoverMoviesResult> popMoviesCall = null;
         try {
@@ -116,47 +169,72 @@ public class MovieFragment extends Fragment {
                     .build();
             MovieApi movieApi = retrofit.create(MovieApi.class);
 
-            if (sortOptions == MovieApi.SortOptions.POPULAR) {
+
+            if (sortOptions == MovieApi.SORTBY_POPULAR) {
                 popMoviesCall = movieApi.getPopularMovies();
-                setActionBarTitle(getResources().getString(R.string.popular_movies));
-            }
-            else {
+            } else {
                 popMoviesCall = movieApi.getTopRatedMovies();
-                setActionBarTitle(getResources().getString(R.string.highest_rated_movies));
             }
         } catch (Exception e) {
-            Log.d(MainActivity.DEBUG_TAG, String.format("Retrofit Error: %s", e.getMessage()));
+            Log.e(MainActivity.DEBUG_TAG, String.format("Retrofit Error: %s", e.getMessage()));
             e.printStackTrace();
         }
 
 
+        if (popMoviesCall != null) {
+            mProgressBar.setVisibility(View.VISIBLE);
+            if (mSnackbar != null) {
+                if (mSnackbar.isShown()) {
+                    mSnackbar.dismiss();
+                }
+            }
+            popMoviesCall.enqueue(new Callback<DiscoverMoviesResult>() {
+                                      @Override
+                                      public void onResponse(Call<DiscoverMoviesResult> call, Response<DiscoverMoviesResult> response) {
+                                          DiscoverMoviesResult moviesResult = response.body();
+                                          Log.i(MainActivity.DEBUG_TAG, "response.isSuccessful():" + response.isSuccessful());
+                                          mProgressBar.setVisibility(View.INVISIBLE);
 
-        popMoviesCall.enqueue(new Callback<DiscoverMoviesResult>() {
-                                  @Override
-                                  public void onResponse(Call<DiscoverMoviesResult> call, Response<DiscoverMoviesResult> response) {
-                                      DiscoverMoviesResult moviesResult = response.body();
-                                      Log.d(MainActivity.DEBUG_TAG, "response.isSuccessful():" + response.isSuccessful());
 
-                                      if (response.isSuccessful() && moviesResult.getMovies() != null) {
-                                          for (Movie movie : moviesResult.getMovies()) {
+                                          if (response.isSuccessful() && moviesResult.getMovies() != null) {
 
-                                              Log.d(MainActivity.DEBUG_TAG, movie.getTitle());
+                                              createListAdapter(moviesResult.getMovies());
+                                              mGridView.smoothScrollToPosition(mScrollPosition);
+                                              if (mSortOptions == MovieApi.SORTBY_POPULAR) {
+                                                  setActionBarTitle(getResources().getString(R.string.popular_movies));
+                                              } else {
+                                                  setActionBarTitle(getResources().getString(R.string.highest_rated_movies));
+                                              }
+                                          } else {
+                                              Log.i(MainActivity.DEBUG_TAG, "response.NOTSuccessful():" + response.code());
+                                              Toast.makeText(getContext(), R.string.err_service_unavailable, Toast.LENGTH_LONG).show();
+                                              mSortOptions = mRestoredSearchOptions;
                                           }
-                                          createListAdapter(moviesResult.getMovies());
-                                      } else {
-                                          Log.d(MainActivity.DEBUG_TAG, "response.NOTSuccessful():" + response.code());
+
                                       }
 
-                                  }
+                                      @Override
+                                      public void onFailure(Call<DiscoverMoviesResult> call, Throwable t) {
+                                          mProgressBar.setVisibility(View.INVISIBLE);
+                                          Log.e(MainActivity.DEBUG_TAG, String.format("popMoviesCall.onFailure: %s", t.getMessage()));
+                                          mSortOptions = mRestoredSearchOptions;
+                                          CoordinatorLayout cl = (CoordinatorLayout) mFragmentView;
+                                          if (cl != null) {
+                                              mSnackbar = Snackbar.make(cl, R.string.err_no_internet_verbose,
+                                                      Snackbar.LENGTH_INDEFINITE);
 
-                                  @Override
-                                  public void onFailure(Call<DiscoverMoviesResult> call, Throwable t) {
-                                      //Toast failToast = Toast.makeText(MainActivity.this, t.getMessage(), Toast.LENGTH_LONG);
-                                      //failToast.show();
-                                      Log.d(MainActivity.DEBUG_TAG, String.format("popMoviesCall.onFailure: %s", t.getMessage()));
+                                              mSnackbar.show();
+                                          } else {
+                                              Toast.makeText(getContext(), R.string.err_no_internet, Toast.LENGTH_LONG).show();
+                                          }
+
+                                      }
                                   }
-                              }
-        );
+            );
+        } else {
+            Log.e(MainActivity.DEBUG_TAG, "refreshData: Null Pointer Exception");
+            mSortOptions = mRestoredSearchOptions;
+        }
     }
 
 }

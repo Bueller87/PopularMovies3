@@ -4,8 +4,9 @@
 
     <ImageView
         android:id="@+id/iv_movie_poster"
+        android:contentDescription="@string/movie_poster"
         android:src="@drawable/film_poster_placeholder"
-        android:layout_margin="2dp"
-        android:layout_width="185dp"
-        android:layout_height="278dp" />
+        android:layout_margin="@dimen/grid_poster_margin"
+        android:layout_width="@dimen/grid_poster_width"
+        android:layout_height="@dimen/grid_poster_height" />
 </FrameLayout>

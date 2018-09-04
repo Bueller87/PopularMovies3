@@ -3,9 +3,10 @@ package com.example.android.popular_movies.model;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-import java.util.List;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
+
+import java.util.List;
 
 public class Movie implements Parcelable {
 
@@ -123,11 +124,18 @@ public class Movie implements Parcelable {
         this.releaseDate = releaseDate;
     }
 
-    public String getImageFullPath() {
+    public String getPosterFullPath() {
         //TODO as api to retrieve base url from "Get API Configuration"
         //https://developers.themoviedb.org/3/configuration/get-api-configuration
         String baseUrl = "https://image.tmdb.org/t/p/w185";
         return baseUrl + getPosterPath();
+    }
+
+    public String getBackdropFullPath() {
+        //TODO as api to retrieve base url from "Get API Configuration"
+        //https://developers.themoviedb.org/3/configuration/get-api-configuration
+        String baseUrl = "https://image.tmdb.org/t/p/w780";
+        return baseUrl + getBackdropPath();
     }
     public Integer getVoteCount() {
         return voteCount;
