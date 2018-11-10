@@ -66,6 +66,7 @@ public class MovieDetailsActivity extends AppCompatActivity {
         Movie movie = getIntent().getParcelableExtra(MovieFragment.MOVIE_OBJECT_TAG);
         boolean b = false;
 
+
         if (movie != null) {
             refreshView(movie);
         }

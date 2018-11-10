@@ -162,6 +162,7 @@ public class MovieFragment extends Fragment {
     private void refreshData(int sortOptions) {
 
         Call<DiscoverMoviesResult> popMoviesCall = null;
+
         try {
             Retrofit retrofit = new Retrofit.Builder()
                     .baseUrl(MovieApi.BASE_URL)
@@ -171,9 +172,9 @@ public class MovieFragment extends Fragment {
 
 
             if (sortOptions == MovieApi.SORTBY_POPULAR) {
-                popMoviesCall = movieApi.getPopularMovies();
+                popMoviesCall = movieApi.getPopularMovies(MovieApi.API_KEY);
             } else {
-                popMoviesCall = movieApi.getTopRatedMovies();
+                popMoviesCall = movieApi.getTopRatedMovies(MovieApi.API_KEY);
             }
         } catch (Exception e) {
             Log.e(MainActivity.DEBUG_TAG, String.format("Retrofit Error: %s", e.getMessage()));
