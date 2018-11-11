@@ -19,6 +19,7 @@ import android.widget.GridView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import com.example.android.popular_movies.adapter.MovieAdapter;
 import com.example.android.popular_movies.model.DiscoverMoviesResult;
 import com.example.android.popular_movies.model.Movie;
 
@@ -177,7 +178,7 @@ public class MovieFragment extends Fragment {
                 popMoviesCall = movieApi.getTopRatedMovies(MovieApi.API_KEY);
             }
         } catch (Exception e) {
-            Log.e(MainActivity.DEBUG_TAG, String.format("Retrofit Error: %s", e.getMessage()));
+            Log.e(MainActivity.DEBUG_TAG, String.format("getPopularMovies(), Retrofit Error: %s", e.getMessage()));
             e.printStackTrace();
         }
 
@@ -193,7 +194,7 @@ public class MovieFragment extends Fragment {
                                       @Override
                                       public void onResponse(Call<DiscoverMoviesResult> call, Response<DiscoverMoviesResult> response) {
                                           DiscoverMoviesResult moviesResult = response.body();
-                                          Log.i(MainActivity.DEBUG_TAG, "response.isSuccessful():" + response.isSuccessful());
+                                          Log.i(MainActivity.DEBUG_TAG, "popMoviesCall success?: " + response.isSuccessful());
                                           mProgressBar.setVisibility(View.INVISIBLE);
 
 
@@ -233,7 +234,7 @@ public class MovieFragment extends Fragment {
                                   }
             );
         } else {
-            Log.e(MainActivity.DEBUG_TAG, "refreshData: Null Pointer Exception");
+            Log.e(MainActivity.DEBUG_TAG, "MovieFragment.refreshData(): Null Pointer Exception");
             mSortOptions = mRestoredSearchOptions;
         }
     }

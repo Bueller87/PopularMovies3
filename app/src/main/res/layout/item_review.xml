@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="4dp"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/tv_review_author"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+
+        android:textSize="12sp"
+        android:textColor="@color/colorAccent"
+        tools:text="John H." />
+
+    <TextView
+        android:id="@+id/tv_review_content"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:text="blah blah blah blah..." />
+</LinearLayout>

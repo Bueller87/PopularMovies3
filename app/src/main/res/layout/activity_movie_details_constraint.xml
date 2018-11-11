@@ -5,6 +5,14 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     tools:context=".MovieDetailsActivity">
+<!--<android.support.v4.widget.NestedScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MovieDetailsActivity"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior">-->
 
     <android.support.constraint.ConstraintLayout
         android:id="@+id/activity_main_inference"
@@ -42,9 +50,10 @@
             app:layout_constraintTop_toTopOf="parent" />
 
         <LinearLayout
+            android:id="@+id/ll_details"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:layout_alignBottom="@+id/iv_poster"
+            android:layout_alignBottom="@+id/iv_details_poster"
             android:layout_alignParentEnd="true"
             android:layout_marginEnd="8dp"
             android:layout_marginStart="8dp"
@@ -86,39 +95,63 @@
         </LinearLayout>
 
         <LinearLayout
+            android:id="@+id/ll_synopsis"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_alignParentStart="true"
             android:layout_centerVertical="true"
-            android:layout_marginBottom="16dp"
             android:layout_marginEnd="16dp"
-            android:layout_marginTop="24dp"
-
-
             android:orientation="vertical"
-            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="1.0"
             app:layout_constraintStart_toStartOf="@+id/iv_details_poster"
-            app:layout_constraintTop_toBottomOf="@+id/iv_details_poster">
+            app:layout_constraintTop_toBottomOf="@+id/ll_details">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
                 android:text="@string/synopsis_label"
-                android:textSize="14sp"
+                android:textAppearance="?android:attr/textAllCaps"
                 android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/tv_overview"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="16dp"
                 android:layout_marginStart="16dp"
-                android:paddingBottom="16dp"
+                android:layout_marginEnd="16dp"
                 android:paddingTop="2dp"
+                android:paddingBottom="16dp"
                 android:text="@string/synopsis_placeholder"
                 android:textSize="12sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/ll_reviews"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+
+            android:layout_marginStart="16dp"
+            android:orientation="vertical"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="@+id/ll_synopsis"
+            app:layout_constraintTop_toBottomOf="@+id/ll_synopsis">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/reviews_label"
+                android:textAppearance="?android:attr/textAllCaps"
+                android:textStyle="bold" />
+
+            <ListView
+                android:id="@+id/rv_reviews"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                 />
+
         </LinearLayout>
 
     </android.support.constraint.ConstraintLayout>

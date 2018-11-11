@@ -1,4 +1,4 @@
-package com.example.android.popular_movies;
+package com.example.android.popular_movies.adapter;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 
+import com.example.android.popular_movies.R;
 import com.example.android.popular_movies.model.Movie;
 import com.squareup.picasso.Picasso;
 

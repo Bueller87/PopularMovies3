@@ -16,6 +16,7 @@
     <string name="err_no_internet_verbose">Please check your internet connection and try again.</string>
     <string name="err_service_unavailable">Movie Service Unavailable</string>
     <string name="movie_poster">Movie Poster</string>
+    <string name="reviews_label">Reviews</string>
 
 
 </resources>

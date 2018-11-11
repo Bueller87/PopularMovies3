@@ -5,18 +5,35 @@ package com.example.android.popular_movies;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.WindowManager;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.TextView;
 
+import com.example.android.popular_movies.adapter.ReviewAdapter;
 import com.example.android.popular_movies.model.Movie;
+import com.example.android.popular_movies.model.MovieReview;
+import com.example.android.popular_movies.model.MovieReviewsResult;
+import com.example.android.popular_movies.model.MovieTrailer;
+import com.example.android.popular_movies.model.MovieTrailersResult;
+import com.example.android.popular_movies.utilities.Utility;
 import com.squareup.picasso.Picasso;
+
+import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 //import android.support.v7.widget.Toolbar;
 
@@ -34,6 +51,64 @@ public class MovieDetailsActivity extends AppCompatActivity {
     TextView ratingTextView;
     @BindView(R.id.tv_overview)
     TextView overviewTextView;
+    @BindView(R.id.rv_reviews)
+    ListView reviewsRecyclerView;
+    private Snackbar mSnackbar;
+
+    private void loadReviews(Integer movieId) {
+        Call<MovieReviewsResult> getMovieReviews = null;
+        try {
+            Retrofit retrofit = new Retrofit.Builder()
+                    .baseUrl(MovieApi.BASE_URL)
+                    .addConverterFactory(GsonConverterFactory.create())
+                    .build();
+            MovieApi movieApi = retrofit.create(MovieApi.class);
+            getMovieReviews = movieApi.getMovieReviews(movieId, MovieApi.API_KEY);
+        } catch (Exception e) {
+            Log.e(MainActivity.DEBUG_TAG, String.format("Retrofit getMovieReviews Error: %s", e.getMessage()));
+        }
+
+        if (getMovieReviews != null) {
+            if (mSnackbar != null) {
+                if (mSnackbar.isShown()) {
+                    mSnackbar.dismiss();
+                }
+            }
+            getMovieReviews.enqueue(new Callback<MovieReviewsResult>() {
+                @Override
+                public void onResponse(@NonNull Call<MovieReviewsResult> call, @NonNull Response<MovieReviewsResult> response) {
+                    MovieReviewsResult reviewsResult = response.body();
+                    Log.i(MainActivity.DEBUG_TAG, "Movie Trailers received?:" + response.isSuccessful());
+
+
+                    try {
+                        if (reviewsResult != null && response.isSuccessful() && reviewsResult.getMovieReviews() != null) {
+                            List<MovieReview> reviewsList =  reviewsResult.getMovieReviews();
+                            createReviewListAdapter(reviewsList);
+                            for (MovieReview review : reviewsList) {
+                                Log.i(MainActivity.DEBUG_TAG, "Review Author: " + review.getAuthor());
+                                Log.i(MainActivity.DEBUG_TAG, "Review Content:\n" + review.getContent());
+                                Log.i(MainActivity.DEBUG_TAG, "---------------------------");
+                            }
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                @Override
+                public void onFailure(@NonNull Call<MovieReviewsResult> call, @NonNull  Throwable t) {
+
+                }
+            });
+        }
+    }
+
+    private void createReviewListAdapter(List<MovieReview> movieReviews){
+        ReviewAdapter reviewAdapter = new ReviewAdapter(this, movieReviews);
+        reviewsRecyclerView.setAdapter(reviewAdapter);
+        Utility.setListViewHeightBasedOnChildren(reviewsRecyclerView);
+    }
 
     private void refreshView(Movie movie) {
 
@@ -55,6 +130,8 @@ public class MovieDetailsActivity extends AppCompatActivity {
                 .load(backdropPath)
                 .placeholder(R.drawable.backdrop_placeholder)
                 .into(backdropImageView);
+
+        loadReviews(movie.getId());
 
     }
 
