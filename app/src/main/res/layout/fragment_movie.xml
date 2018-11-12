@@ -13,7 +13,7 @@
         android:layout_height="wrap_content"
         android:numColumns="2"
         android:stretchMode="columnWidth"
-        tools:context=".MovieFragment" />
+        tools:context=".fragments.MovieFragment" />
 
     <RelativeLayout
         android:layout_width="fill_parent"

@@ -1,4 +1,4 @@
-package com.example.android.popular_movies;
+package com.example.android.popular_movies.network;
 
 import com.example.android.popular_movies.model.DiscoverMoviesResult;
 import com.example.android.popular_movies.model.MovieReviewsResult;
@@ -16,7 +16,7 @@ public interface MovieApi {
     int SORTBY_HIGHEST_RATED = 2;
 
     String BASE_URL = "https://api.themoviedb.org/3/movie/";
-    String API_KEY = "8137e80aa355d0aa982c215c3c009bdc";
+    String API_KEY = "";
 
     @GET("popular")
     Call<DiscoverMoviesResult>getPopularMovies(@Query("api_key") String apiKey);

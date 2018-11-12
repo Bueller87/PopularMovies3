@@ -1,5 +1,7 @@
 package com.example.android.popular_movies.model;
 
+import android.arch.persistence.room.Entity;
+import android.arch.persistence.room.PrimaryKey;
 import android.os.Parcel;
 import android.os.Parcelable;
 
@@ -8,6 +10,7 @@ import com.google.gson.annotations.SerializedName;
 
 import java.util.List;
 
+@Entity(tableName = "movie")
 public class Movie implements Parcelable {
 
     @SerializedName("vote_count")
@@ -15,6 +18,7 @@ public class Movie implements Parcelable {
     private Integer voteCount;
     @SerializedName("id")
     @Expose
+    @PrimaryKey
     private Integer id;
     @SerializedName("video")
     @Expose
@@ -52,6 +56,7 @@ public class Movie implements Parcelable {
     @SerializedName("release_date")
     @Expose
     private String releaseDate;
+
 
     public final static Parcelable.Creator<Movie> CREATOR = new Creator<Movie>() {
 

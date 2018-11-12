@@ -1,4 +1,4 @@
-package com.example.android.popular_movies;
+package com.example.android.popular_movies.fragments;
 
 
 import android.content.Intent;
@@ -19,9 +19,13 @@ import android.widget.GridView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import com.example.android.popular_movies.MovieDetailsActivity;
+import com.example.android.popular_movies.R;
+import com.example.android.popular_movies.activities.MainActivity;
 import com.example.android.popular_movies.adapter.MovieAdapter;
 import com.example.android.popular_movies.model.DiscoverMoviesResult;
 import com.example.android.popular_movies.model.Movie;
+import com.example.android.popular_movies.network.MovieApi;
 
 import java.util.List;
 import java.util.Objects;
@@ -220,15 +224,7 @@ public class MovieFragment extends Fragment {
                                           mProgressBar.setVisibility(View.INVISIBLE);
                                           Log.e(MainActivity.DEBUG_TAG, String.format("popMoviesCall.onFailure: %s", t.getMessage()));
                                           mSortOptions = mRestoredSearchOptions;
-                                          CoordinatorLayout cl = (CoordinatorLayout) mFragmentView;
-                                          if (cl != null) {
-                                              mSnackbar = Snackbar.make(cl, R.string.err_no_internet_verbose,
-                                                      Snackbar.LENGTH_INDEFINITE);
-
-                                              mSnackbar.show();
-                                          } else {
-                                              Toast.makeText(getContext(), R.string.err_no_internet, Toast.LENGTH_LONG).show();
-                                          }
+                                          showNetworkErrorSnackbar();
 
                                       }
                                   }
@@ -238,5 +234,18 @@ public class MovieFragment extends Fragment {
             mSortOptions = mRestoredSearchOptions;
         }
     }
-
+    private void showNetworkErrorSnackbar() {
+        mSnackbar = Snackbar
+                .make((CoordinatorLayout) mFragmentView, R.string.err_no_internet_verbose,
+                        Snackbar.LENGTH_INDEFINITE)
+                .setAction(R.string.got_it, new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        mSnackbar.dismiss();
+                    }
+                });
+        if (!mSnackbar.isShownOrQueued()) {
+            mSnackbar.show();
+        }
+    }
 }

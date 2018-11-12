@@ -176,4 +176,12 @@ public class MovieTrailer implements Parcelable
         return 0;
     }
 
+    public String getThumbnailUrl(){
+        return  String.format("https://img.youtube.com/vi/%s/hqdefault.jpg", getKey());
+    }
+
+    public String getVideoUrl() {
+        return String.format("https://www.youtube.com/watch?v=%s", getKey());
+    }
+
 }

@@ -27,6 +27,7 @@
             android:contentDescription="@string/movie_backdrop"
             android:scaleType="centerCrop"
             android:src="@drawable/backdrop_placeholder"
+
             app:layout_constraintLeft_creator="1"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_creator="1"
@@ -35,6 +36,18 @@
             app:layout_constraintTop_toTopOf="parent"
             app:layout_editor_absoluteX="0dp"
             app:layout_editor_absoluteY="0dp" />
+
+
+        <include
+            android:id="@+id/btn_favorite"
+            layout="@layout/button_favorite"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginEnd="24dp"
+            android:layout_marginBottom="16dp"
+            app:layout_constraintBottom_toBottomOf="@+id/ll_details"
+            app:layout_constraintEnd_toEndOf="parent" />
+
 
         <ImageView
             android:id="@+id/iv_details_poster"
@@ -48,6 +61,8 @@
             android:src="@drawable/film_poster_placeholder"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
+
+
 
         <LinearLayout
             android:id="@+id/ll_details"
@@ -92,6 +107,7 @@
                 android:textSize="14sp"
                 android:textStyle="bold" />
 
+
         </LinearLayout>
 
         <LinearLayout
@@ -104,7 +120,6 @@
             android:orientation="vertical"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="1.0"
-            app:layout_constraintStart_toStartOf="@+id/iv_details_poster"
             app:layout_constraintTop_toBottomOf="@+id/ll_details">
 
             <TextView
@@ -112,7 +127,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
                 android:text="@string/synopsis_label"
-                android:textAppearance="?android:attr/textAllCaps"
+                android:textAllCaps="true"
+                android:textColor="@color/Black"
                 android:textStyle="bold" />
 
             <TextView
@@ -121,29 +137,66 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
                 android:layout_marginEnd="16dp"
-                android:paddingTop="2dp"
-                android:paddingBottom="16dp"
-                android:text="@string/synopsis_placeholder"
+                android:paddingBottom="8dp"
+                tools:text="foobar"
                 android:textSize="12sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/ll_trailers"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:orientation="vertical"
+
+            app:layout_constraintStart_toStartOf="@+id/ll_synopsis"
+            app:layout_constraintTop_toBottomOf="@+id/ll_synopsis"
+            app:layout_constraintVertical_bias="0.0">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/trailers_label"
+                android:textAllCaps="true"
+                android:textColor="@color/Black"
+                android:textStyle="bold" />
+
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/rv_trailers"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal" />
+
+            <TextView
+                android:id="@+id/tv_no_trailers"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="gone"
+                android:textSize="12sp"
+                android:text="@string/no_trailers"  />
+
+
         </LinearLayout>
 
         <LinearLayout
             android:id="@+id/ll_reviews"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-
             android:layout_marginStart="16dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="16dp"
             android:orientation="vertical"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="@+id/ll_synopsis"
-            app:layout_constraintTop_toBottomOf="@+id/ll_synopsis">
+            app:layout_constraintStart_toStartOf="@+id/ll_trailers"
+            app:layout_constraintTop_toBottomOf="@+id/ll_trailers">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/reviews_label"
-                android:textAppearance="?android:attr/textAllCaps"
+                android:textAllCaps="true"
+                android:textColor="@color/Black"
                 android:textStyle="bold" />
 
             <ListView
@@ -151,6 +204,13 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                  />
+            <TextView
+                android:id="@+id/tv_no_reviews"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="gone"
+                android:textSize="12sp"
+                android:text="@string/no_reviews"  />
 
         </LinearLayout>
 

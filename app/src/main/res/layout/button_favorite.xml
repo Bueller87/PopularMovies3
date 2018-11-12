@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:onClick="onClickFavorite"
+    tools:context=".MovieDetailsActivity">
+
+    <ImageView
+        android:id="@+id/iv_favorite_border"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:src="@drawable/ic_favorite_border_black_24dp" />
+
+    <ImageView
+        android:id="@+id/iv_favorite_fill"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_gravity="center"
+        android:src="@drawable/favorite_black_24dp"
+        android:visibility="invisible"
+        />
+
+</FrameLayout>
