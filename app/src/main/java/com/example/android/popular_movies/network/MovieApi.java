@@ -11,9 +11,7 @@ import retrofit2.http.Query;
 
 
 public interface MovieApi {
-    int SORTBY_UNDEFINED = 0;
-    int SORTBY_POPULAR = 1;
-    int SORTBY_HIGHEST_RATED = 2;
+
 
     String BASE_URL = "https://api.themoviedb.org/3/movie/";
     String API_KEY = "";

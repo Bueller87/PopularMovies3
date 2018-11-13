@@ -1,6 +1,8 @@
 package com.example.android.popular_movies.model;
 
+import android.arch.persistence.room.ColumnInfo;
 import android.arch.persistence.room.Entity;
+import android.arch.persistence.room.Ignore;
 import android.arch.persistence.room.PrimaryKey;
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -10,49 +12,63 @@ import com.google.gson.annotations.SerializedName;
 
 import java.util.List;
 
-@Entity(tableName = "movie")
+@Entity(tableName = "movies")
 public class Movie implements Parcelable {
 
+    @ColumnInfo(name = "vote_count")
     @SerializedName("vote_count")
     @Expose
     private Integer voteCount;
+    @ColumnInfo(name = "id")
     @SerializedName("id")
     @Expose
     @PrimaryKey
     private Integer id;
+    @ColumnInfo(name = "video")
     @SerializedName("video")
     @Expose
     private Boolean video;
+    @ColumnInfo(name = "vote_average")
     @SerializedName("vote_average")
     @Expose
     private Float voteAverage;
+    @ColumnInfo(name = "title")
     @SerializedName("title")
     @Expose
     private String title;
+    @ColumnInfo(name = "popularity")
     @SerializedName("popularity")
     @Expose
     private Float popularity;
+    @ColumnInfo(name = "poster_path")
     @SerializedName("poster_path")
     @Expose
     private String posterPath;
+    @ColumnInfo(name = "original_language")
     @SerializedName("original_language")
     @Expose
     private String originalLanguage;
+    @ColumnInfo(name = "original_title")
     @SerializedName("original_title")
     @Expose
     private String originalTitle;
+    @Ignore
     @SerializedName("genre_ids")
     @Expose
     private List<Integer> genreIds = null;
+    @ColumnInfo(name = "backdrop_path")
     @SerializedName("backdrop_path")
     @Expose
     private String backdropPath;
+    @ColumnInfo(name = "adult")
     @SerializedName("adult")
     @Expose
     private Boolean adult;
+    @ColumnInfo(name = "overview")
     @SerializedName("overview")
     @Expose
     private String overview;
+    @ColumnInfo(name = "release_date")
     @SerializedName("release_date")
     @Expose
     private String releaseDate;
@@ -72,9 +88,9 @@ public class Movie implements Parcelable {
             return (new Movie[size]);
         }
 
-    }
-            ;
+    };
 
+    @Ignore
     protected Movie(Parcel in) {
         this.voteCount = ((Integer) in.readValue((Integer.class.getClassLoader())));
         this.id = ((Integer) in.readValue((Integer.class.getClassLoader())));
@@ -93,25 +109,29 @@ public class Movie implements Parcelable {
     }
 
 
+    public Movie(Integer voteCount, Integer id, Boolean video, Float voteAverage, String title,
+                 Float popularity, String posterPath, String originalLanguage, String originalTitle,
+                  String backdropPath, Boolean adult, String overview, String releaseDate) {
+        super();
+        this.voteCount = voteCount;
+        this.id = id;
+        this.video = video;
+        this.voteAverage = voteAverage;
+        this.title = title;
+        this.popularity = popularity;
+        this.posterPath = posterPath;
+        this.originalLanguage = originalLanguage;
+        this.originalTitle = originalTitle;
+        this.backdropPath = backdropPath;
+        this.adult = adult;
+        this.overview = overview;
+        this.releaseDate = releaseDate;
+    }
 
-    /**
-     *
-     * @param genreIds
-     * @param id
-     * @param title
-     * @param releaseDate
-     * @param overview
-     * @param posterPath
-     * @param originalTitle
-     * @param voteAverage
-     * @param originalLanguage
-     * @param adult
-     * @param backdropPath
-     * @param voteCount
-     * @param video
-     * @param popularity
-     */
-    public Movie(Integer voteCount, Integer id, Boolean video, Float voteAverage, String title, Float popularity, String posterPath, String originalLanguage, String originalTitle, List<Integer> genreIds, String backdropPath, Boolean adult, String overview, String releaseDate) {
+    @Ignore
+    public Movie(Integer voteCount, Integer id, Boolean video, Float voteAverage, String title,
+                 Float popularity, String posterPath, String originalLanguage, String originalTitle,
+                 List<Integer> genreIds, String backdropPath, Boolean adult, String overview, String releaseDate) {
         super();
         this.voteCount = voteCount;
         this.id = id;
@@ -142,6 +162,7 @@ public class Movie implements Parcelable {
         String baseUrl = "https://image.tmdb.org/t/p/w780";
         return baseUrl + getBackdropPath();
     }
+
     public Integer getVoteCount() {
         return voteCount;
     }

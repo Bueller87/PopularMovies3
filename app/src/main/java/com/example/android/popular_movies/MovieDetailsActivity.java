@@ -2,6 +2,7 @@ package com.example.android.popular_movies;
 
 //import android.app.ActionBar;
 
+import android.arch.lifecycle.LiveData;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
@@ -18,11 +19,14 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.example.android.popular_movies.activities.MainActivity;
 import com.example.android.popular_movies.adapter.ReviewAdapter;
 import com.example.android.popular_movies.adapter.TrailerAdapter;
+import com.example.android.popular_movies.database.AppDatabase;
+import com.example.android.popular_movies.database.AppExecutors;
 import com.example.android.popular_movies.fragments.MovieFragment;
 import com.example.android.popular_movies.model.Movie;
 import com.example.android.popular_movies.model.MovieReview;
@@ -69,10 +73,53 @@ public class MovieDetailsActivity extends AppCompatActivity {
     TextView noTrailersTextView;
     @BindView(R.id.iv_favorite_fill)
     ImageView favButtonFill;
+    @BindView(R.id.progressBar)
+    ProgressBar progressBar;
 
     private Snackbar mSnackbar;
     private List<MovieTrailer> mMovieTrailers;
+    private AppDatabase mAppDatabase;
+    private Movie mMovie;
+    private boolean mTrailersLoaded;
+    private boolean mReviewsLoaded;
 
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_movie_details_constraint);
+        mAppDatabase = AppDatabase.getInstance(getApplicationContext());
+        ButterKnife.bind(this);
+        Movie movie = getIntent().getParcelableExtra(MovieFragment.MOVIE_OBJECT_TAG);
+        boolean b = false;
+        mMovie = movie;
+
+        if (movie != null) {
+            refreshView(movie);
+        }
+        LinearLayoutManager trailerLayoutManager = new LinearLayoutManager(this,
+                LinearLayoutManager.HORIZONTAL, false);
+        trailersRecyclerView.setLayoutManager(trailerLayoutManager);
+
+        trailersRecyclerView.addOnItemTouchListener(new RecyclerClickListener(this, new RecyclerClickListener.OnItemClickListener() {
+            @Override
+            public void onItemClick(View view, int position) {
+                String url = mMovieTrailers.get(position).getVideoUrl();
+                Intent i = new Intent(Intent.ACTION_VIEW);
+                i.setData(Uri.parse(url));
+                startActivity(i);
+            }
+        }));
+
+
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setDisplayHomeAsUpEnabled(true);
+            actionBar.setDisplayShowHomeEnabled(true);
+            getWindow().setFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION,
+                    WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);
+            actionBar.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        }
+    }
     private void loadTrailers(Integer movieId) {
         Call<MovieTrailersResult> getTrailers = null;
 
@@ -86,6 +133,7 @@ public class MovieDetailsActivity extends AppCompatActivity {
         } catch (Exception e) {
             Log.e(MainActivity.DEBUG_TAG, String.format("Retrofit getTrailers Exception: %s", e.getMessage()));
             e.printStackTrace();
+            hidePB();
         }
 
         if (getTrailers != null) {
@@ -97,8 +145,11 @@ public class MovieDetailsActivity extends AppCompatActivity {
             getTrailers.enqueue(new Callback<MovieTrailersResult>() {
                 @Override
                 public void onResponse(@NonNull Call<MovieTrailersResult> call, @NonNull Response<MovieTrailersResult> response) {
+                    mTrailersLoaded = true;
+                    checkDoneLoading();
                     MovieTrailersResult trailersResult = response.body();
                     Log.i(MainActivity.DEBUG_TAG, "Movie Trailers received?:" + response.isSuccessful());
+
 
                     try {
                         if (trailersResult != null && response.isSuccessful() && trailersResult.getMovieTrailers() != null) {
@@ -113,6 +164,7 @@ public class MovieDetailsActivity extends AppCompatActivity {
                     } catch (Exception e) {
                         Log.e(MainActivity.DEBUG_TAG, String.format("Retrofit getTrailers:onResponse Exception: %s", e.getMessage()));
                         e.printStackTrace();
+
                     }
                 }
 
@@ -120,6 +172,7 @@ public class MovieDetailsActivity extends AppCompatActivity {
                 public void onFailure(@NonNull Call<MovieTrailersResult> call, @NonNull Throwable t) {
                     Log.e(MainActivity.DEBUG_TAG, String.format("Retrofit getTrailers:onFailure : %s", t.getMessage()));
                     showNetworkErrorSnackbar();
+
                 }
             });
         }
@@ -137,6 +190,7 @@ public class MovieDetailsActivity extends AppCompatActivity {
         } catch (Exception e) {
             Log.e(MainActivity.DEBUG_TAG, String.format("Retrofit getMovieReviews Exception: %s", e.getMessage()));
             e.printStackTrace();
+            hidePB();
         }
 
         if (getMovieReviews != null) {
@@ -148,6 +202,8 @@ public class MovieDetailsActivity extends AppCompatActivity {
             getMovieReviews.enqueue(new Callback<MovieReviewsResult>() {
                 @Override
                 public void onResponse(@NonNull Call<MovieReviewsResult> call, @NonNull Response<MovieReviewsResult> response) {
+                    mReviewsLoaded = true;
+                    checkDoneLoading();
                     MovieReviewsResult reviewsResult = response.body();
                     Log.i(MainActivity.DEBUG_TAG, "Movie Reviews received?:" + response.isSuccessful());
 
@@ -177,6 +233,12 @@ public class MovieDetailsActivity extends AppCompatActivity {
         }
     }
 
+    private void checkDoneLoading() {
+        if (mReviewsLoaded && mTrailersLoaded) {
+            hidePB();
+        }
+    }
+
     private void createReviewListAdapter(List<MovieReview> movieReviews) {
         if (movieReviews != null && movieReviews.size() > 0) {
             ReviewAdapter reviewAdapter = new ReviewAdapter(this, movieReviews);
@@ -198,8 +260,10 @@ public class MovieDetailsActivity extends AppCompatActivity {
         }
     }
 
-    private void refreshView(Movie movie) {
 
+
+    private void refreshView(Movie movie) {
+        showPB();
         this.setTitle("");
         titleTextView.setText(movie.getOriginalTitle());
         releaseDateTextView.setText(movie.getReleaseDate());
@@ -221,45 +285,11 @@ public class MovieDetailsActivity extends AppCompatActivity {
 
         loadTrailers(movie.getId());
         loadReviews(movie.getId());
+        refreshFavoriteButton(movie);
 
     }
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_movie_details_constraint);
-        ButterKnife.bind(this);
-        Movie movie = getIntent().getParcelableExtra(MovieFragment.MOVIE_OBJECT_TAG);
-        boolean b = false;
 
-
-        if (movie != null) {
-            refreshView(movie);
-        }
-        LinearLayoutManager trailerLayoutManager = new LinearLayoutManager(this,
-                LinearLayoutManager.HORIZONTAL, false);
-        trailersRecyclerView.setLayoutManager(trailerLayoutManager);
-
-        trailersRecyclerView.addOnItemTouchListener(new RecyclerClickListener(this, new RecyclerClickListener.OnItemClickListener() {
-            @Override
-            public void onItemClick(View view, int position) {
-                String url = mMovieTrailers.get(position).getVideoUrl();
-                Intent i = new Intent(Intent.ACTION_VIEW);
-                i.setData(Uri.parse(url));
-                startActivity(i);
-            }
-        }));
-
-
-        ActionBar actionBar = getSupportActionBar();
-        if (actionBar != null) {
-            actionBar.setDisplayHomeAsUpEnabled(true);
-            actionBar.setDisplayShowHomeEnabled(true);
-            getWindow().setFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION,
-                    WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);
-            actionBar.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-        }
-    }
 
     @Override
     public boolean onSupportNavigateUp() {
@@ -268,19 +298,74 @@ public class MovieDetailsActivity extends AppCompatActivity {
     }
 
     public void onClickFavorite(View view) {
-        String favMsg = "Favorite Added";
-        if (favButtonFill.getVisibility() == View.VISIBLE) {
+        String favMsg;
+        final boolean isFavorite = (favButtonFill.getVisibility() == View.VISIBLE);
+
+        //update ui
+        if (isFavorite) {//remove favorite
+            favMsg = getString(R.string.favorite_removed);
             favButtonFill.setVisibility(View.INVISIBLE);
-            favMsg = "Favorite Removed";
-        } else {
+
+        } else { //add favorite
+            favMsg = getString(R.string.favorite_added);
             favButtonFill.setVisibility(View.VISIBLE);
         }
+
+        //give user feedback
         mSnackbar = Snackbar.make(view, favMsg,
                 Snackbar.LENGTH_SHORT);
         mSnackbar.show();
+
+        //update datebase on a separate thread
+        AppExecutors.getInstance().diskIO().execute(new Runnable() {
+            @Override
+            public void run() {
+                if (isFavorite) {
+                    mAppDatabase.movieDao().deleteMovie(mMovie);
+                }
+                else {
+                    mAppDatabase.movieDao().insertMovie(mMovie);
+                }
+            }
+        });
+    }
+
+    private void refreshFavoriteButton(final Movie currMovie) {
+
+        AppExecutors.getInstance().diskIO().execute(new Runnable() {
+            @Override
+            public void run() {
+                final Movie favoriteMovie = mAppDatabase.movieDao().findFavoriteMovie(currMovie.getId());
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        boolean isFavorite = (favoriteMovie != null);
+                        if (isFavorite) {
+                            favButtonFill.setVisibility(View.VISIBLE);
+                        }
+                        else  {
+                            favButtonFill.setVisibility(View.INVISIBLE);
+                        }
+                    }
+                });
+
+            }
+        });
+
+
+
+    }
+
+    private void showPB() {
+        progressBar.setVisibility(View.VISIBLE);
+    }
+
+    private void hidePB() {
+        progressBar.setVisibility(View.INVISIBLE);
     }
 
     private void showNetworkErrorSnackbar() {
+        hidePB();
         mSnackbar = Snackbar
                 .make(findViewById(R.id.myCoordinatorLayout), R.string.err_no_internet_verbose,
                         Snackbar.LENGTH_INDEFINITE)

@@ -17,7 +17,7 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 public class MainActivity extends AppCompatActivity {
-    public final static String DEBUG_TAG = "LogTag";
+    public final static String DEBUG_TAG = "PopularMovies";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

@@ -1,9 +1,11 @@
 <resources>
     <string name="app_name">Popular Movies</string>
     <string name="popular_movies">Popular Movies</string>
+    <string name="favorite_movies">Favorite Movies</string>
     <string name="highest_rated_movies">Highest Rated Movies</string>
     <string name="menu_popular">Popular</string>
     <string name="menu_highest_rated">Highest Rated</string>
+    <string name="menu_favorite">Favorites</string>
     <string name="title_activity_movie_details">MovieDetailsActivity</string>
 
     <string name="movie_backdrop">Movie Backdrop</string>
@@ -21,6 +23,8 @@
     <string name="no_reviews">No Reviews</string>
     <string name="no_trailers">No Trailers</string>
     <string name="got_it">Got it</string>
+    <string name="favorite_removed">Favorite Removed</string>
+    <string name="favorite_added">Favorite Added</string>
 
 
 </resources>

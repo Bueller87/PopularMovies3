@@ -19,11 +19,10 @@ android {
 }
 ext {
     roomVersion = '1.1.1'
-    liveData = '1.1.1'
+    liveDataVersion = '1.1.1'
     supportLibVersion = '27.1.1'
     retrofitVersion = '2.4.0'
     butterknifeVersion = '8.8.1'
-    constraintLayout = '1.1.3'
 }
 
 dependencies {
@@ -33,11 +32,14 @@ dependencies {
     implementation "com.android.support:appcompat-v7:${supportLibVersion}"
     implementation "com.android.support:recyclerview-v7:${supportLibVersion}"
     implementation "com.android.support:design:${supportLibVersion}"
-    implementation "com.android.support.constraint:constraint-layout:${constraintLayout}"
+    implementation "com.android.support.constraint:constraint-layout:1.1.3"
 
     //Picasso
     implementation group: 'com.squareup.picasso', name: 'picasso', version: '2.5.2'
 
+    //Butterknife
+    implementation 'com.jakewharton:butterknife:8.8.1'
+    annotationProcessor 'com.jakewharton:butterknife-compiler:8.8.1'
     //Retrofit 2
     implementation "com.squareup.retrofit2:retrofit:${retrofitVersion}"
     implementation "com.squareup.retrofit2:converter-gson:${retrofitVersion}"
@@ -47,15 +49,12 @@ dependencies {
     annotationProcessor "android.arch.persistence.room:compiler:${roomVersion}"
 
     // Live Data
-    implementation "android.arch.lifecycle:extensions:${liveData}"
-    annotationProcessor "android.arch.lifecycle:compiler:${liveData}"
+    implementation "android.arch.lifecycle:extensions:${liveDataVersion}"
+    annotationProcessor "android.arch.lifecycle:compiler:${liveDataVersion}"
 
-    // Loader
-    implementation 'com.victor:lib:1.0.4'
 
-    //Butterknife
-    implementation 'com.jakewharton:butterknife:8.8.1'
-    annotationProcessor 'com.jakewharton:butterknife-compiler:8.8.1'
+
+
 
     // Testing
     testImplementation 'junit:junit:4.12'

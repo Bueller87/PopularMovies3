@@ -10,15 +10,23 @@
         <menu>
             <item
                 android:id="@+id/action_popular"
-                android:title="@string/menu_popular"
                 android:orderInCategory="0"
+                android:title="@string/menu_popular"
                 app:showAsAction="never">
+
             </item>
 
             <item
                 android:id="@+id/action_highest_rated"
-                android:title="@string/menu_highest_rated"
                 android:orderInCategory="1"
+                android:title="@string/menu_highest_rated"
+                app:showAsAction="never">
+
+            </item>
+            <item
+                android:id="@+id/action_favorite"
+                android:orderInCategory="2"
+                android:title="@string/menu_favorite"
                 app:showAsAction="never">
 
             </item>
