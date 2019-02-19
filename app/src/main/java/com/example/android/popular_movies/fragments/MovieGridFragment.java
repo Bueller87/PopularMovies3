@@ -50,13 +50,7 @@ public class MovieGridFragment extends Fragment {
     public final static String MOVIE_OBJECT_TAG = "MovieParcel";
     public final static String SAVED_SORT_OPTIONS = "SavedSortOptions";
     public final static String SAVED_SCROLL_POSITION = "SavedScrollPosition";
-    /*public final static int FILTER_BY_UNDEFINED = 0;
-    public final static int FILTER_BY_MOST_POPULAR = 1;
-    public final static int FILTER_BY_HIGHEST_RATED = 2;
-    public final static int FILTER_BY_FAVORITE = 3;
-    public final static int RESUME_FIRST_TIME = 1;
-    public final static int RESUME_CONFIG_CHANGE = 2;
-    public final static int RESUME_OTHER_ACTIVITY =* 3;/
+    
     /*@BindView(R.id.movies_grid)*/
     private GridView mGridView;
     private ProgressBar mProgressBar;
@@ -70,7 +64,6 @@ public class MovieGridFragment extends Fragment {
     private List<Movie> mMoviesList;
     private int mSortOptions = MainViewModel.FILTER_BY_MOST_POPULAR;
     private int mRestoredSearchOptions = MainViewModel.FILTER_BY_UNDEFINED;
-    //private int mResumeType = RESUME_FIRST_TIME;
     private int mScrollPosition = 0;
     private MainViewModel mMainViewModel;
     private boolean mOnCreateCalled = false;
@@ -83,7 +76,6 @@ public class MovieGridFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         setHasOptionsMenu(true);
-        //mAppDatabase = AppDatabase.getInstance(getActivity().getApplicationContext());
         // Inflate the layout for this fragment
         View fragmentView = inflater.inflate(R.layout.fragment_movie, container, false);
         mFragmentView = fragmentView;
@@ -163,19 +155,6 @@ public class MovieGridFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        /*if (mResumeType == RESUME_FIRST_TIME) {
-            setupViewModel();
-            refreshData(mSortOptions);
-            mResumeType = RESUME_OTHER_ACTIVITY;
-            Log.e(MainActivity.DEBUG_TAG, "MovieGridFragment.onResume(), RESUME_FIRST_TIME");
-        } else if (mResumeType == RESUME_CONFIG_CHANGE) {  //
-            setupViewModel();
-            createListAdapter(mMainViewModel.getMovies());
-            mResumeType = RESUME_OTHER_ACTIVITY;
-            Log.e(MainActivity.DEBUG_TAG, "MovieGridFragment.onResume(), RESUME_CONFIG_CHANGE");
-        } else if (mResumeType == RESUME_OTHER_ACTIVITY) {
-            Log.e(MainActivity.DEBUG_TAG, "MovieGridFragment.onResume(), RESUME_OTHER_ACTIVITY");
-        }*/
     }
 
     @Override
@@ -183,7 +162,6 @@ public class MovieGridFragment extends Fragment {
         Log.e(MainActivity.DEBUG_TAG, "MovieGridFragment.onSaveInstanceState()");
         outState.putInt(SAVED_SORT_OPTIONS, mSortOptions);
         outState.putInt(SAVED_SCROLL_POSITION, mGridView.getFirstVisiblePosition());
-       // mMainViewModel.setMovies(mMoviesList);
         super.onSaveInstanceState(outState);
     }
 
@@ -194,11 +172,8 @@ public class MovieGridFragment extends Fragment {
         if (savedInstanceState != null) {
             mSortOptions = savedInstanceState.getInt(SAVED_SORT_OPTIONS);
             mScrollPosition = savedInstanceState.getInt(SAVED_SCROLL_POSITION);
-            //mResumeType = RESUME_CONFIG_CHANGE;
             Log.d(MainActivity.DEBUG_TAG, "MovieGridFragment.onViewStateRestored(), RESUME_CONFIG_CHANGE");
-            //mMainViewModel.getMovies();
         } else {
-            //mResumeType = RESUME_FIRST_TIME;
             Log.d(MainActivity.DEBUG_TAG, "MovieGridFragment.onViewStateRestored(), RESUME_FIRST_TIME");
         }
     }
@@ -224,7 +199,6 @@ public class MovieGridFragment extends Fragment {
                 Intent intent = new Intent(getActivity(), MovieDetailsActivity.class);
                 intent.putExtra(MovieGridFragment.MOVIE_OBJECT_TAG, mMoviesList.get(i));
                 startActivity(intent);
-                //mResumeType = MainViewModel.RESUME_OTHER_ACTIVITY;
             }
         });
 
@@ -309,76 +283,7 @@ public class MovieGridFragment extends Fragment {
             mSnackbar.show();
         }
     }
-    /*private void refreshData(int sortOptions) {
-        if (sortOptions == FILTER_BY_FAVORITE) {
-            refreshFavorites();
-            Log.e(MainActivity.DEBUG_TAG, "Sort by Favorites");
-        } else {
-            Call<DiscoverMoviesResult> popMoviesCall = null;
-            try {
-                Retrofit retrofit = new Retrofit.Builder()
-                        .baseUrl(MovieApi.BASE_URL)
-                        .addConverterFactory(GsonConverterFactory.create())
-                        .build();
-                MovieApi movieApi = retrofit.create(MovieApi.class);
 
-
-                if (sortOptions == FILTER_BY_MOST_POPULAR) {
-                    popMoviesCall = movieApi.getPopularMovies(MovieApi.API_KEY);
-                } else if (sortOptions == FILTER_BY_HIGHEST_RATED) {
-                    popMoviesCall = movieApi.getTopRatedMovies(MovieApi.API_KEY);
-                }
-            } catch (Exception e) {
-                Log.e(MainActivity.DEBUG_TAG, String.format("getPopularMovies(), Retrofit Error: %s", e.getMessage()));
-                e.printStackTrace();
-            }
-
-
-            if (popMoviesCall != null) {
-                mProgressBar.setVisibility(View.VISIBLE);
-                if (mSnackbar != null) {
-                    if (mSnackbar.isShown()) {
-                        mSnackbar.dismiss();
-                    }
-                }
-                popMoviesCall.enqueue(new Callback<DiscoverMoviesResult>() {
-                      @Override
-                      public void onResponse(Call<DiscoverMoviesResult> call, Response<DiscoverMoviesResult> response) {
-                          DiscoverMoviesResult moviesResult = response.body();
-                          Log.i(MainActivity.DEBUG_TAG, "popMoviesCall success?: " + response.isSuccessful());
-                          mProgressBar.setVisibility(View.INVISIBLE);
-
-
-                          if (response.isSuccessful() && moviesResult.getMovies() != null) {
-
-                              createListAdapter(moviesResult.getMovies());
-
-
-                          } else {
-                              Log.i(MainActivity.DEBUG_TAG, "response.NOTSuccessful():" + response.code());
-                              Toast.makeText(getContext(), R.string.err_service_unavailable, Toast.LENGTH_LONG).show();
-                              mSortOptions = mRestoredSearchOptions;
-                          }
-
-                      }
-
-                      @Override
-                      public void onFailure(Call<DiscoverMoviesResult> call, Throwable t) {
-                          mProgressBar.setVisibility(View.INVISIBLE);
-                          Log.e(MainActivity.DEBUG_TAG, String.format("popMoviesCall.onFailure: %s", t.getMessage()));
-                          mSortOptions = mRestoredSearchOptions;
-                          showNetworkErrorSnackbar();
-
-                      }
-                  }
-                );
-            } else {
-                Log.e(MainActivity.DEBUG_TAG, "MovieGridFragment.refreshData(): Null Pointer Exception");
-                mSortOptions = mRestoredSearchOptions;
-            }
-        }
-
-    }*/
 
 
 }
