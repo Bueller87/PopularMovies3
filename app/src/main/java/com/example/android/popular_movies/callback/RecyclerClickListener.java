@@ -1,4 +1,4 @@
-package com.example.android.popular_movies;
+package com.example.android.popular_movies.callback;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;

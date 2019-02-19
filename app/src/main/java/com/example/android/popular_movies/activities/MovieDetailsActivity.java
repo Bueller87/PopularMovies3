@@ -1,8 +1,6 @@
-package com.example.android.popular_movies;
+package com.example.android.popular_movies.activities;
 
-//import android.app.ActionBar;
 
-import android.arch.lifecycle.LiveData;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
@@ -22,18 +20,19 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import com.example.android.popular_movies.activities.MainActivity;
+import com.example.android.popular_movies.R;
 import com.example.android.popular_movies.adapter.ReviewAdapter;
 import com.example.android.popular_movies.adapter.TrailerAdapter;
+import com.example.android.popular_movies.callback.RecyclerClickListener;
 import com.example.android.popular_movies.database.AppDatabase;
 import com.example.android.popular_movies.database.AppExecutors;
-import com.example.android.popular_movies.fragments.MovieFragment;
+import com.example.android.popular_movies.fragments.MovieGridFragment;
 import com.example.android.popular_movies.model.Movie;
 import com.example.android.popular_movies.model.MovieReview;
 import com.example.android.popular_movies.model.MovieReviewsResult;
 import com.example.android.popular_movies.model.MovieTrailer;
 import com.example.android.popular_movies.model.MovieTrailersResult;
-import com.example.android.popular_movies.network.MovieApi;
+import com.example.android.popular_movies.repository.MovieApi;
 import com.example.android.popular_movies.utilities.Utility;
 import com.squareup.picasso.Picasso;
 
@@ -47,7 +46,6 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
-//import android.support.v7.widget.Toolbar;
 
 public class MovieDetailsActivity extends AppCompatActivity {
 
@@ -89,7 +87,7 @@ public class MovieDetailsActivity extends AppCompatActivity {
         setContentView(R.layout.activity_movie_details_constraint);
         mAppDatabase = AppDatabase.getInstance(getApplicationContext());
         ButterKnife.bind(this);
-        Movie movie = getIntent().getParcelableExtra(MovieFragment.MOVIE_OBJECT_TAG);
+        Movie movie = getIntent().getParcelableExtra(MovieGridFragment.MOVIE_OBJECT_TAG);
         boolean b = false;
         mMovie = movie;
 
@@ -150,16 +148,10 @@ public class MovieDetailsActivity extends AppCompatActivity {
                     MovieTrailersResult trailersResult = response.body();
                     Log.i(MainActivity.DEBUG_TAG, "Movie Trailers received?:" + response.isSuccessful());
 
-
                     try {
                         if (trailersResult != null && response.isSuccessful() && trailersResult.getMovieTrailers() != null) {
                             mMovieTrailers = trailersResult.getMovieTrailers();
                             createTrailersListAdapter(mMovieTrailers);
-                            /*for (MovieTrailer trailer : trailersList) {
-                                Log.i(MainActivity.DEBUG_TAG, "Trailer Title: " + trailer.getName());
-                                Log.i(MainActivity.DEBUG_TAG, "Trailer URL:" + trailer.getThumbnailUrl());
-                                Log.i(MainActivity.DEBUG_TAG, "---------------------------");
-                            }*/
                         }
                     } catch (Exception e) {
                         Log.e(MainActivity.DEBUG_TAG, String.format("Retrofit getTrailers:onResponse Exception: %s", e.getMessage()));
@@ -212,11 +204,6 @@ public class MovieDetailsActivity extends AppCompatActivity {
                         if (reviewsResult != null && response.isSuccessful() && reviewsResult.getMovieReviews() != null) {
                             List<MovieReview> reviewsList = reviewsResult.getMovieReviews();
                             createReviewListAdapter(reviewsList);
-                            /*for (MovieReview review : reviewsList) {
-                                Log.i(MainActivity.DEBUG_TAG, "Review Author: " + review.getAuthor());
-                                Log.i(MainActivity.DEBUG_TAG, "Review Content:\n" + review.getContent());
-                                Log.i(MainActivity.DEBUG_TAG, "---------------------------");
-                            }*/
                         }
                     } catch (Exception e) {
                         Log.e(MainActivity.DEBUG_TAG, String.format("Retrofit getMovieReviews onResponse Exception: %s", e.getMessage()));

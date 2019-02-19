@@ -8,7 +8,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.ListView;
 
 import com.example.android.popular_movies.R;
 import com.example.android.popular_movies.activities.MainActivity;
@@ -33,7 +32,7 @@ public class TrailerAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         RecyclerView.ViewHolder trailerViewHolder;
         View viewFromGroup;
 
-        viewFromGroup = LayoutInflater.from(parent.getContext()).inflate(R.layout.trailer_list_item,
+        viewFromGroup = LayoutInflater.from(parent.getContext()).inflate(R.layout.list_item_trailer,
                 parent, false);
         trailerViewHolder = new TrailerItemHolder(viewFromGroup);
 

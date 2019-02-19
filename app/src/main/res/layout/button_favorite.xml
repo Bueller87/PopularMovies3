@@ -5,7 +5,7 @@
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:onClick="onClickFavorite"
-    tools:context=".MovieDetailsActivity">
+    tools:context=".activities.MovieDetailsActivity">
 
     <ImageView
         android:id="@+id/iv_favorite_border"

@@ -24,7 +24,6 @@ public class MovieAdapter extends ArrayAdapter<Movie> {
         super(context, 0, movies);
         mMovies = movies;
         mContext = context;
-
     }
 
     @NonNull
@@ -35,7 +34,7 @@ public class MovieAdapter extends ArrayAdapter<Movie> {
         Context infContext = getContext();
         if (convertView == null) {
             convertView = LayoutInflater.from(infContext).inflate(
-                    R.layout.movie_list_item, parent, false);
+                    R.layout.list_item_movie, parent, false);
         }
 
 

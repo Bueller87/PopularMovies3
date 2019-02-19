@@ -2,7 +2,6 @@ package com.example.android.popular_movies.fragments;
 
 
 import android.app.Activity;
-import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
@@ -24,16 +23,15 @@ import android.widget.GridView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
-import com.example.android.popular_movies.MovieDetailsActivity;
+import com.example.android.popular_movies.activities.MovieDetailsActivity;
 import com.example.android.popular_movies.R;
 import com.example.android.popular_movies.activities.MainActivity;
 import com.example.android.popular_movies.adapter.MovieAdapter;
 import com.example.android.popular_movies.database.AppDatabase;
-import com.example.android.popular_movies.database.AppExecutors;
-import com.example.android.popular_movies.database.MainViewModel;
+import com.example.android.popular_movies.viewmodel.MainViewModel;
 import com.example.android.popular_movies.model.DiscoverMoviesResult;
 import com.example.android.popular_movies.model.Movie;
-import com.example.android.popular_movies.network.MovieApi;
+import com.example.android.popular_movies.repository.MovieApi;
 
 import java.util.List;
 import java.util.Objects;
@@ -48,17 +46,17 @@ import retrofit2.converter.gson.GsonConverterFactory;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class MovieFragment extends Fragment {
+public class MovieGridFragment extends Fragment {
     public final static String MOVIE_OBJECT_TAG = "MovieParcel";
     public final static String SAVED_SORT_OPTIONS = "SavedSortOptions";
     public final static String SAVED_SCROLL_POSITION = "SavedScrollPosition";
-    public final static int FILTER_BY_UNDEFINED = 0;
+    /*public final static int FILTER_BY_UNDEFINED = 0;
     public final static int FILTER_BY_MOST_POPULAR = 1;
     public final static int FILTER_BY_HIGHEST_RATED = 2;
     public final static int FILTER_BY_FAVORITE = 3;
     public final static int RESUME_FIRST_TIME = 1;
     public final static int RESUME_CONFIG_CHANGE = 2;
-    public final static int RESUME_OTHER_ACTIVITY = 3;
+    public final static int RESUME_OTHER_ACTIVITY =* 3;/
     /*@BindView(R.id.movies_grid)*/
     private GridView mGridView;
     private ProgressBar mProgressBar;
@@ -70,22 +68,37 @@ public class MovieFragment extends Fragment {
     private AppDatabase mAppDatabase;
 
     private List<Movie> mMoviesList;
-    private int mSortOptions = FILTER_BY_MOST_POPULAR;
-    private int mRestoredSearchOptions = FILTER_BY_UNDEFINED;
-    private int mResumeType = RESUME_FIRST_TIME;
+    private int mSortOptions = MainViewModel.FILTER_BY_MOST_POPULAR;
+    private int mRestoredSearchOptions = MainViewModel.FILTER_BY_UNDEFINED;
+    //private int mResumeType = RESUME_FIRST_TIME;
     private int mScrollPosition = 0;
     private MainViewModel mMainViewModel;
     private boolean mOnCreateCalled = false;
 
 
-    public MovieFragment() {
+    public MovieGridFragment() {
         // Required empty public constructor
     }
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        setHasOptionsMenu(true);
+        //mAppDatabase = AppDatabase.getInstance(getActivity().getApplicationContext());
+        // Inflate the layout for this fragment
+        View fragmentView = inflater.inflate(R.layout.fragment_movie, container, false);
+        mFragmentView = fragmentView;
+        mGridView = fragmentView.findViewById(R.id.movies_grid);
+        mProgressBar = fragmentView.findViewById(R.id.progressBar);
+        setupViewModel();
 
+        Log.e(MainActivity.DEBUG_TAG, "MovieGridFragment.CreateView()");
+        mOnCreateCalled = true;
+        return fragmentView;
+    }
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        inflater.inflate(R.menu.sort_menu, menu);
+        inflater.inflate(R.menu.menu_sort, menu);
         mPopularMenuItem = menu.findItem(R.id.action_popular);
         mHighestRatedMenuItem = menu.findItem(R.id.action_highest_rated);
         mFavoriteMenuItem = menu.findItem(R.id.action_favorite);
@@ -98,30 +111,30 @@ public class MovieFragment extends Fragment {
         int sortOptions;
         switch (item.getItemId()) {
             case R.id.action_popular:
-                sortOptions = FILTER_BY_MOST_POPULAR;
+                sortOptions = MainViewModel.FILTER_BY_MOST_POPULAR;
                 break;
             case R.id.action_highest_rated:
-                sortOptions = FILTER_BY_HIGHEST_RATED;
+                sortOptions = MainViewModel.FILTER_BY_HIGHEST_RATED;
                 break;
             case R.id.action_favorite:
-                sortOptions = FILTER_BY_FAVORITE;
+                sortOptions = MainViewModel.FILTER_BY_FAVORITE;
                 break;
             case R.id.action_sort:
                 try {
-                    if (mSortOptions == FILTER_BY_MOST_POPULAR) {
+                    if (mSortOptions == MainViewModel.FILTER_BY_MOST_POPULAR) {
                         mPopularMenuItem.setVisible(false);
                         mHighestRatedMenuItem.setVisible(true);
                         mFavoriteMenuItem.setVisible(true);
-                    } else if (mSortOptions == FILTER_BY_HIGHEST_RATED) {
+                    } else if (mSortOptions == MainViewModel.FILTER_BY_HIGHEST_RATED) {
                         mPopularMenuItem.setVisible(true);
                         mFavoriteMenuItem.setVisible(true);
                         mHighestRatedMenuItem.setVisible(false);
 
-                    } else if (mSortOptions == FILTER_BY_FAVORITE) {
+                    } else if (mSortOptions == MainViewModel.FILTER_BY_FAVORITE) {
                         mPopularMenuItem.setVisible(true);
                         mFavoriteMenuItem.setVisible(false);
                         mHighestRatedMenuItem.setVisible(true);
-                    } else if (mSortOptions == FILTER_BY_UNDEFINED) { //this should could happen if no internet on startup
+                    } else if (mSortOptions == MainViewModel.FILTER_BY_UNDEFINED) { //this should could happen if no internet on startup
                         mPopularMenuItem.setVisible(true);
                         mHighestRatedMenuItem.setVisible(true);
                     }
@@ -144,64 +157,49 @@ public class MovieFragment extends Fragment {
     }
 
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        setHasOptionsMenu(true);
-        mAppDatabase = AppDatabase.getInstance(getActivity().getApplicationContext());
-        // Inflate the layout for this fragment
-        View fragmentView = inflater.inflate(R.layout.fragment_movie, container, false);
-        mFragmentView = fragmentView;
-        mGridView = fragmentView.findViewById(R.id.movies_grid);
-        mProgressBar = fragmentView.findViewById(R.id.progressBar);
 
-
-        Log.e(MainActivity.DEBUG_TAG, "MovieFragment.CreateView()");
-        mOnCreateCalled = true;
-        return fragmentView;
-    }
 
 
     @Override
     public void onResume() {
         super.onResume();
-        if (mResumeType == RESUME_FIRST_TIME) {
+        /*if (mResumeType == RESUME_FIRST_TIME) {
             setupViewModel();
             refreshData(mSortOptions);
             mResumeType = RESUME_OTHER_ACTIVITY;
-            Log.e(MainActivity.DEBUG_TAG, "MovieFragment.onResume(), RESUME_FIRST_TIME");
+            Log.e(MainActivity.DEBUG_TAG, "MovieGridFragment.onResume(), RESUME_FIRST_TIME");
         } else if (mResumeType == RESUME_CONFIG_CHANGE) {  //
             setupViewModel();
             createListAdapter(mMainViewModel.getMovies());
             mResumeType = RESUME_OTHER_ACTIVITY;
-            Log.e(MainActivity.DEBUG_TAG, "MovieFragment.onResume(), RESUME_CONFIG_CHANGE");
+            Log.e(MainActivity.DEBUG_TAG, "MovieGridFragment.onResume(), RESUME_CONFIG_CHANGE");
         } else if (mResumeType == RESUME_OTHER_ACTIVITY) {
-            Log.e(MainActivity.DEBUG_TAG, "MovieFragment.onResume(), RESUME_OTHER_ACTIVITY");
-        }
+            Log.e(MainActivity.DEBUG_TAG, "MovieGridFragment.onResume(), RESUME_OTHER_ACTIVITY");
+        }*/
     }
 
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
-        Log.e(MainActivity.DEBUG_TAG, "MovieFragment.onSaveInstanceState()");
+        Log.e(MainActivity.DEBUG_TAG, "MovieGridFragment.onSaveInstanceState()");
         outState.putInt(SAVED_SORT_OPTIONS, mSortOptions);
         outState.putInt(SAVED_SCROLL_POSITION, mGridView.getFirstVisiblePosition());
-        mMainViewModel.setMovies(mMoviesList);
+       // mMainViewModel.setMovies(mMoviesList);
         super.onSaveInstanceState(outState);
     }
 
     @Override
     public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
         super.onViewStateRestored(savedInstanceState);
-        Log.e(MainActivity.DEBUG_TAG, "MovieFragment.onViewStateRestored()");
+        Log.e(MainActivity.DEBUG_TAG, "MovieGridFragment.onViewStateRestored()");
         if (savedInstanceState != null) {
             mSortOptions = savedInstanceState.getInt(SAVED_SORT_OPTIONS);
             mScrollPosition = savedInstanceState.getInt(SAVED_SCROLL_POSITION);
-            mResumeType = RESUME_CONFIG_CHANGE;
-            Log.d(MainActivity.DEBUG_TAG, "MovieFragment.onViewStateRestored(), RESUME_CONFIG_CHANGE");
+            //mResumeType = RESUME_CONFIG_CHANGE;
+            Log.d(MainActivity.DEBUG_TAG, "MovieGridFragment.onViewStateRestored(), RESUME_CONFIG_CHANGE");
             //mMainViewModel.getMovies();
         } else {
-            mResumeType = RESUME_FIRST_TIME;
-            Log.d(MainActivity.DEBUG_TAG, "MovieFragment.onViewStateRestored(), RESUME_FIRST_TIME");
+            //mResumeType = RESUME_FIRST_TIME;
+            Log.d(MainActivity.DEBUG_TAG, "MovieGridFragment.onViewStateRestored(), RESUME_FIRST_TIME");
         }
     }
 
@@ -211,11 +209,11 @@ public class MovieFragment extends Fragment {
         mGridView.setAdapter(movieAdapter);
         mGridView.smoothScrollToPosition(mScrollPosition);
         mProgressBar.setVisibility(View.INVISIBLE);
-        if (mSortOptions == FILTER_BY_MOST_POPULAR) {
+        if (mSortOptions == MainViewModel.FILTER_BY_MOST_POPULAR) {
             setActionBarTitle(getResources().getString(R.string.popular_movies));
-        } else if (mSortOptions == FILTER_BY_HIGHEST_RATED) {
+        } else if (mSortOptions == MainViewModel.FILTER_BY_HIGHEST_RATED) {
             setActionBarTitle(getResources().getString(R.string.highest_rated_movies));
-        } else if (mSortOptions == FILTER_BY_FAVORITE) {
+        } else if (mSortOptions == MainViewModel.FILTER_BY_FAVORITE) {
             setActionBarTitle(getResources().getString(R.string.favorite_movies));
         }
 
@@ -224,9 +222,9 @@ public class MovieFragment extends Fragment {
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 //TODO launch Details View Activity
                 Intent intent = new Intent(getActivity(), MovieDetailsActivity.class);
-                intent.putExtra(MovieFragment.MOVIE_OBJECT_TAG, mMoviesList.get(i));
+                intent.putExtra(MovieGridFragment.MOVIE_OBJECT_TAG, mMoviesList.get(i));
                 startActivity(intent);
-                mResumeType = RESUME_OTHER_ACTIVITY;
+                //mResumeType = MainViewModel.RESUME_OTHER_ACTIVITY;
             }
         });
 
@@ -248,22 +246,70 @@ public class MovieFragment extends Fragment {
             mMainViewModel.getFavoriteMovies().observe(this, new Observer<List<Movie>>() {
                 @Override
                 public void onChanged(@Nullable List<Movie> movies) {
-                    Log.e(MainActivity.DEBUG_TAG, "Observer:Favorites onChange Event");
-                    refreshFavorites();
+                    Log.d(MainActivity.DEBUG_TAG, "Observer:Favorites onChanged Event");
+                    onLoadFavorites();
+                }
+            });
+
+            //movieListChanged
+            mMainViewModel.getMovieList().observe(this, new Observer<List<Movie>>() {
+                @Override
+                public void onChanged(@Nullable List<Movie> movies) {
+                    Log.d(MainActivity.DEBUG_TAG, "Observer:MovieList onChanged Event");
+                    if (mSortOptions == MainViewModel.FILTER_BY_MOST_POPULAR ||
+                            mSortOptions == MainViewModel.FILTER_BY_HIGHEST_RATED) {
+
+                        onLoadMovies(movies);
+                    }
                 }
             });
         }
     }
 
-    private void refreshFavorites() {
-
-        if (mSortOptions == FILTER_BY_FAVORITE) {
+    private void onLoadFavorites() {
+        if (mSortOptions == MainViewModel.FILTER_BY_FAVORITE) {
             createListAdapter(mMainViewModel.getFavoriteMovies().getValue());
-
         }
     }
 
+    private void onLoadMovies(List<Movie> movies) {
+        if (mSortOptions == MainViewModel.FILTER_BY_MOST_POPULAR ||
+                mSortOptions == MainViewModel.FILTER_BY_HIGHEST_RATED) {
+            if (movies!= null) {
+                createListAdapter(movies);
+            } else {
+                Toast.makeText(getContext(), R.string.err_service_unavailable, Toast.LENGTH_LONG).show();
+                mSortOptions = mRestoredSearchOptions;
+            }
+        }
+    }
     private void refreshData(int sortOptions) {
+        if (sortOptions == MainViewModel.FILTER_BY_FAVORITE) {
+            //mSortOptions = sortOptions;
+            onLoadFavorites();
+            Log.e(MainActivity.DEBUG_TAG, "Sort by Favorites");
+        } else if (sortOptions == MainViewModel.FILTER_BY_MOST_POPULAR ||
+                sortOptions == MainViewModel.FILTER_BY_HIGHEST_RATED) {
+            //mSortOptions = sortOptions;
+            mMainViewModel.onMoviesRefreshNeeded(sortOptions);
+        }
+    }
+
+    private void showNetworkErrorSnackbar() {
+        mSnackbar = Snackbar
+                .make((CoordinatorLayout) mFragmentView, R.string.err_no_internet_verbose,
+                        Snackbar.LENGTH_INDEFINITE)
+                .setAction(R.string.got_it, new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        mSnackbar.dismiss();
+                    }
+                });
+        if (!mSnackbar.isShownOrQueued()) {
+            mSnackbar.show();
+        }
+    }
+    /*private void refreshData(int sortOptions) {
         if (sortOptions == FILTER_BY_FAVORITE) {
             refreshFavorites();
             Log.e(MainActivity.DEBUG_TAG, "Sort by Favorites");
@@ -296,56 +342,43 @@ public class MovieFragment extends Fragment {
                     }
                 }
                 popMoviesCall.enqueue(new Callback<DiscoverMoviesResult>() {
-                                          @Override
-                                          public void onResponse(Call<DiscoverMoviesResult> call, Response<DiscoverMoviesResult> response) {
-                                              DiscoverMoviesResult moviesResult = response.body();
-                                              Log.i(MainActivity.DEBUG_TAG, "popMoviesCall success?: " + response.isSuccessful());
-                                              mProgressBar.setVisibility(View.INVISIBLE);
+                      @Override
+                      public void onResponse(Call<DiscoverMoviesResult> call, Response<DiscoverMoviesResult> response) {
+                          DiscoverMoviesResult moviesResult = response.body();
+                          Log.i(MainActivity.DEBUG_TAG, "popMoviesCall success?: " + response.isSuccessful());
+                          mProgressBar.setVisibility(View.INVISIBLE);
 
 
-                                              if (response.isSuccessful() && moviesResult.getMovies() != null) {
+                          if (response.isSuccessful() && moviesResult.getMovies() != null) {
 
-                                                  createListAdapter(moviesResult.getMovies());
+                              createListAdapter(moviesResult.getMovies());
 
 
-                                              } else {
-                                                  Log.i(MainActivity.DEBUG_TAG, "response.NOTSuccessful():" + response.code());
-                                                  Toast.makeText(getContext(), R.string.err_service_unavailable, Toast.LENGTH_LONG).show();
-                                                  mSortOptions = mRestoredSearchOptions;
-                                              }
+                          } else {
+                              Log.i(MainActivity.DEBUG_TAG, "response.NOTSuccessful():" + response.code());
+                              Toast.makeText(getContext(), R.string.err_service_unavailable, Toast.LENGTH_LONG).show();
+                              mSortOptions = mRestoredSearchOptions;
+                          }
 
-                                          }
+                      }
 
-                                          @Override
-                                          public void onFailure(Call<DiscoverMoviesResult> call, Throwable t) {
-                                              mProgressBar.setVisibility(View.INVISIBLE);
-                                              Log.e(MainActivity.DEBUG_TAG, String.format("popMoviesCall.onFailure: %s", t.getMessage()));
-                                              mSortOptions = mRestoredSearchOptions;
-                                              showNetworkErrorSnackbar();
+                      @Override
+                      public void onFailure(Call<DiscoverMoviesResult> call, Throwable t) {
+                          mProgressBar.setVisibility(View.INVISIBLE);
+                          Log.e(MainActivity.DEBUG_TAG, String.format("popMoviesCall.onFailure: %s", t.getMessage()));
+                          mSortOptions = mRestoredSearchOptions;
+                          showNetworkErrorSnackbar();
 
-                                          }
-                                      }
+                      }
+                  }
                 );
             } else {
-                Log.e(MainActivity.DEBUG_TAG, "MovieFragment.refreshData(): Null Pointer Exception");
+                Log.e(MainActivity.DEBUG_TAG, "MovieGridFragment.refreshData(): Null Pointer Exception");
                 mSortOptions = mRestoredSearchOptions;
             }
         }
 
-    }
+    }*/
 
-    private void showNetworkErrorSnackbar() {
-        mSnackbar = Snackbar
-                .make((CoordinatorLayout) mFragmentView, R.string.err_no_internet_verbose,
-                        Snackbar.LENGTH_INDEFINITE)
-                .setAction(R.string.got_it, new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        mSnackbar.dismiss();
-                    }
-                });
-        if (!mSnackbar.isShownOrQueued()) {
-            mSnackbar.show();
-        }
-    }
+
 }
