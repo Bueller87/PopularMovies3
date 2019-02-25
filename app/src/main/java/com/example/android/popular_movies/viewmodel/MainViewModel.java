@@ -3,13 +3,6 @@ package com.example.android.popular_movies.viewmodel;
 import android.app.Application;
 import android.arch.lifecycle.AndroidViewModel;
 import android.arch.lifecycle.LiveData;
-import android.arch.lifecycle.MutableLiveData;
-import android.arch.lifecycle.Observer;
-import android.support.annotation.Nullable;
-import android.util.Log;
-import android.view.View;
-
-import com.example.android.popular_movies.activities.MainActivity;
 import com.example.android.popular_movies.database.AppDatabase;
 import com.example.android.popular_movies.database.AppExecutors;
 import com.example.android.popular_movies.model.DataWrapper;
@@ -17,7 +10,6 @@ import com.example.android.popular_movies.model.Movie;
 import com.example.android.popular_movies.model.MovieReview;
 import com.example.android.popular_movies.model.MovieTrailer;
 import com.example.android.popular_movies.repository.MovieRepository;
-
 import java.util.List;
 
 public class MainViewModel extends AndroidViewModel {
@@ -27,7 +19,6 @@ public class MainViewModel extends AndroidViewModel {
     public final static int FILTER_BY_FAVORITE = 3;
     private LiveData<List<Movie>> mFavoriteMovieList;
     private LiveData<DataWrapper<List<Movie>>> mMovieList;
-    //private LiveData<DataWrapper<List<MovieTrailer>>> mMovieTrailerList;
     private final MovieRepository mMovieRepository;
     private final AppDatabase mAppDatabase;
 
@@ -35,7 +26,6 @@ public class MainViewModel extends AndroidViewModel {
         super(application);
         mAppDatabase = AppDatabase.getInstance(this.getApplication());
         mFavoriteMovieList = mAppDatabase.movieDao().loadAllFavoriteMovies();
-
         mMovieRepository = MovieRepository.getInstance();
         mMovieList = mMovieRepository.getMovieList(FILTER_BY_MOST_POPULAR);
     }

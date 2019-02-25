@@ -25,7 +25,6 @@ public class TrailerAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         mTrailers = trailers;
     }
 
-
     @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -42,12 +41,10 @@ public class TrailerAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         String url = mTrailers.get(position).getThumbnailUrl();
-
         Picasso.with(mContext)
                 .load(url)
                 .placeholder(R.drawable.movie_trailer_placeholder)
                 .into(((TrailerItemHolder) holder).mImageViewTrailerThumbnail);
-        Log.d(MainActivity.DEBUG_TAG, "onBindViewHolder: position=" + position);
     }
 
     @Override
@@ -60,7 +57,7 @@ public class TrailerAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
         public TrailerItemHolder(View view) {
             super(view);
-            mImageViewTrailerThumbnail = (ImageView) view.findViewById(R.id.iv_movie_thumb);
+            mImageViewTrailerThumbnail = view.findViewById(R.id.iv_movie_thumb);
         }
     }
 }

@@ -8,7 +8,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -22,31 +21,16 @@ import android.widget.AdapterView;
 import android.widget.GridView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
-
 import com.example.android.popular_movies.activities.MovieDetailsActivity;
 import com.example.android.popular_movies.R;
 import com.example.android.popular_movies.activities.MainActivity;
 import com.example.android.popular_movies.adapter.MovieAdapter;
-import com.example.android.popular_movies.database.AppDatabase;
 import com.example.android.popular_movies.model.DataWrapper;
 import com.example.android.popular_movies.viewmodel.MainViewModel;
-import com.example.android.popular_movies.model.DiscoverMoviesResult;
 import com.example.android.popular_movies.model.Movie;
-import com.example.android.popular_movies.repository.MovieApi;
-
 import java.util.List;
 import java.util.Objects;
 
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
-import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
-
-
-/**
- * A simple {@link Fragment} subclass.
- */
 public class MovieGridFragment extends Fragment {
     public final static String MOVIE_OBJECT_TAG = "MovieParcel";
     public final static String SAVED_SORT_OPTIONS = "SavedSortOptions";
@@ -149,7 +133,6 @@ public class MovieGridFragment extends Fragment {
 
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
-        Log.e(MainActivity.DEBUG_TAG, "MovieGridFragment.onSaveInstanceState()");
         outState.putInt(SAVED_SORT_OPTIONS, mSortOptions);
         outState.putInt(SAVED_SCROLL_POSITION, mGridView.getFirstVisiblePosition());
         super.onSaveInstanceState(outState);
@@ -158,13 +141,9 @@ public class MovieGridFragment extends Fragment {
     @Override
     public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
         super.onViewStateRestored(savedInstanceState);
-        Log.e(MainActivity.DEBUG_TAG, "MovieGridFragment.onViewStateRestored()");
         if (savedInstanceState != null) {
             mSortOptions = savedInstanceState.getInt(SAVED_SORT_OPTIONS);
             mScrollPosition = savedInstanceState.getInt(SAVED_SCROLL_POSITION);
-            Log.d(MainActivity.DEBUG_TAG, "MovieGridFragment.onViewStateRestored(), RESUME_CONFIG_CHANGE");
-        } else {
-            Log.d(MainActivity.DEBUG_TAG, "MovieGridFragment.onViewStateRestored(), RESUME_FIRST_TIME");
         }
     }
 
@@ -207,6 +186,8 @@ public class MovieGridFragment extends Fragment {
         Activity activity = getActivity();
         if (activity != null) {
             mMainViewModel = ViewModelProviders.of(this).get(MainViewModel.class);
+
+            //Observe changes in favorites db table
             mMainViewModel.getFavoriteMovies().observe(this, new Observer<List<Movie>>() {
                 @Override
                 public void onChanged(@Nullable List<Movie> movies) {
@@ -215,12 +196,11 @@ public class MovieGridFragment extends Fragment {
                 }
             });
 
-            //movieListChanged
+            //observe changes from Movie API calls
             mMainViewModel.getMovieList().observe(this, new Observer<DataWrapper<List<Movie>>>() {
                 @Override
                 public void onChanged(@Nullable DataWrapper<List<Movie>> movieCallData) {
                     mProgressBar.setVisibility(View.INVISIBLE);
-                    Log.d(MainActivity.DEBUG_TAG, "Observer:MovieList onChanged Event");
                     if (mSortOptions == MainViewModel.FILTER_BY_MOST_POPULAR ||
                             mSortOptions == MainViewModel.FILTER_BY_HIGHEST_RATED) {
                         onLoadMovies(movieCallData);
@@ -255,7 +235,6 @@ public class MovieGridFragment extends Fragment {
         dismissNetworkErrorSnackbar();
         if (sortOptions == MainViewModel.FILTER_BY_FAVORITE) {
             onLoadFavorites();
-            Log.e(MainActivity.DEBUG_TAG, "Sort by Favorites");
         } else if (sortOptions == MainViewModel.FILTER_BY_MOST_POPULAR ||
                 sortOptions == MainViewModel.FILTER_BY_HIGHEST_RATED) {
             mProgressBar.setVisibility(View.VISIBLE);

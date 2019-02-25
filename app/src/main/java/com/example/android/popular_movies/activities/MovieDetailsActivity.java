@@ -1,4 +1,5 @@
 package com.example.android.popular_movies.activities;
+
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
@@ -6,7 +7,6 @@ import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.Snackbar;
@@ -27,16 +27,11 @@ import com.example.android.popular_movies.R;
 import com.example.android.popular_movies.adapter.ReviewAdapter;
 import com.example.android.popular_movies.adapter.TrailerAdapter;
 import com.example.android.popular_movies.callback.RecyclerClickListener;
-import com.example.android.popular_movies.database.AppDatabase;
-import com.example.android.popular_movies.database.AppExecutors;
 import com.example.android.popular_movies.fragments.MovieGridFragment;
 import com.example.android.popular_movies.model.DataWrapper;
 import com.example.android.popular_movies.model.Movie;
 import com.example.android.popular_movies.model.MovieReview;
-import com.example.android.popular_movies.model.MovieReviewsResult;
 import com.example.android.popular_movies.model.MovieTrailer;
-import com.example.android.popular_movies.model.MovieTrailersResult;
-import com.example.android.popular_movies.repository.MovieApi;
 import com.example.android.popular_movies.utilities.Utility;
 import com.example.android.popular_movies.viewmodel.MainViewModel;
 import com.squareup.picasso.Picasso;
@@ -45,11 +40,7 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
-import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
+
 
 public class MovieDetailsActivity extends AppCompatActivity {
     @BindView(R.id.iv_backdrop)
@@ -79,7 +70,6 @@ public class MovieDetailsActivity extends AppCompatActivity {
 
     private Snackbar mSnackbar;
     private List<MovieTrailer> mMovieTrailers;
-    private AppDatabase mAppDatabase;
     private MainViewModel mMainViewModel;
     private Movie mMovie;
     private boolean mTrailersLoaded;
@@ -92,7 +82,6 @@ public class MovieDetailsActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_movie_details_constraint);
-        mAppDatabase = AppDatabase.getInstance(getApplicationContext());
         ButterKnife.bind(this);
         mMovie = getIntent().getParcelableExtra(MovieGridFragment.MOVIE_OBJECT_TAG);
         mCoordinatorLayout = (CoordinatorLayout) findViewById(R.id.myCoordinatorLayout);
@@ -112,6 +101,7 @@ public class MovieDetailsActivity extends AppCompatActivity {
             }
         }));
 
+        //setup transparent actionBar
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
@@ -120,17 +110,17 @@ public class MovieDetailsActivity extends AppCompatActivity {
                     WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);
             actionBar.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
         }
-        /*if (mMovie != null) {
+        if (mMovie != null) {
             refreshView(mMovie);
-        }*/
+        }
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        if (mMovie != null) {
+        /*if (mMovie != null) {
             refreshView(mMovie);
-        }
+        }*/
     }
 
     private void setupViewModel() {
@@ -155,7 +145,7 @@ public class MovieDetailsActivity extends AppCompatActivity {
     private void loadTrailers(Integer movieId) {
         mMainViewModel.getMovieTrailerList(movieId).observe(this, new Observer<DataWrapper<List<MovieTrailer>>>() {
             @Override
-            public void onChanged( DataWrapper<List<MovieTrailer>> trailerCallData) {
+            public void onChanged(DataWrapper<List<MovieTrailer>> trailerCallData) {
                 mTrailersLoaded = true;
                 checkDoneLoading();  //clear progress bar if done
                 if (trailerCallData.getDeviceNoConnectivity()) {
@@ -164,7 +154,7 @@ public class MovieDetailsActivity extends AppCompatActivity {
                 } else if (trailerCallData.getData() != null) {
                     mMovieTrailers = trailerCallData.getData();
                     createTrailersListAdapter(mMovieTrailers);
-                } else if (trailerCallData.getErrMessage() != null){
+                } else if (trailerCallData.getErrMessage() != null) {
                     onFailedToLoadTrailers();
                     Toast.makeText(MovieDetailsActivity.this,
                             trailerCallData.getErrMessage(),
@@ -175,10 +165,10 @@ public class MovieDetailsActivity extends AppCompatActivity {
         });
     }
 
-    private void loadReviews2(Integer movieId) {
+    private void loadReviews(Integer movieId) {
         mMainViewModel.getMovieReviewList(movieId).observe(this, new Observer<DataWrapper<List<MovieReview>>>() {
             @Override
-            public void onChanged( DataWrapper<List<MovieReview>> reviewCallData) {
+            public void onChanged(DataWrapper<List<MovieReview>> reviewCallData) {
                 mReviewsLoaded = true;
                 checkDoneLoading();  //clear progress bar if done
                 if (reviewCallData.getDeviceNoConnectivity()) {
@@ -186,7 +176,7 @@ public class MovieDetailsActivity extends AppCompatActivity {
                     showNetworkErrorSnackbar();
                 } else if (reviewCallData.getData() != null) {
                     createReviewListAdapter(reviewCallData.getData());
-                } else if (reviewCallData.getErrMessage() != null){
+                } else if (reviewCallData.getErrMessage() != null) {
                     onFailedToLoadReviews();
                     Toast.makeText(MovieDetailsActivity.this,
                             reviewCallData.getErrMessage(),
@@ -195,55 +185,6 @@ public class MovieDetailsActivity extends AppCompatActivity {
                 }
             }
         });
-    }
-    private void loadReviews(Integer movieId) {
-        Call<MovieReviewsResult> getMovieReviews = null;
-        try {
-            Retrofit retrofit = new Retrofit.Builder()
-                    .baseUrl(MovieApi.BASE_URL)
-                    .addConverterFactory(GsonConverterFactory.create())
-                    .build();
-            MovieApi movieApi = retrofit.create(MovieApi.class);
-            getMovieReviews = movieApi.getMovieReviews(movieId, MovieApi.API_KEY);
-        } catch (Exception e) {
-            Log.e(MainActivity.DEBUG_TAG, String.format("Retrofit getMovieReviews Exception: %s", e.getMessage()));
-            e.printStackTrace();
-            hidePB();
-        }
-
-        if (getMovieReviews != null) {
-            if (mSnackbar != null) {
-                if (mSnackbar.isShown()) {
-                    mSnackbar.dismiss();
-                }
-            }
-            getMovieReviews.enqueue(new Callback<MovieReviewsResult>() {
-                @Override
-                public void onResponse(@NonNull Call<MovieReviewsResult> call, @NonNull Response<MovieReviewsResult> response) {
-                    mReviewsLoaded = true;
-                    checkDoneLoading();
-                    MovieReviewsResult reviewsResult = response.body();
-                    Log.i(MainActivity.DEBUG_TAG, "Movie Reviews received?:" + response.isSuccessful());
-
-
-                    try {
-                        if (reviewsResult != null && response.isSuccessful() && reviewsResult.getMovieReviews() != null) {
-                            List<MovieReview> reviewsList = reviewsResult.getMovieReviews();
-                            createReviewListAdapter(reviewsList);
-                        }
-                    } catch (Exception e) {
-                        Log.e(MainActivity.DEBUG_TAG, String.format("Retrofit getMovieReviews onResponse Exception: %s", e.getMessage()));
-                        e.printStackTrace();
-                    }
-                }
-
-                @Override
-                public void onFailure(@NonNull Call<MovieReviewsResult> call, @NonNull Throwable t) {
-                    Log.e(MainActivity.DEBUG_TAG, String.format("Retrofit getReviews:onFailure : %s", t.getMessage()));
-                    showNetworkErrorSnackbar();
-                }
-            });
-        }
     }
 
     private void checkDoneLoading() {
@@ -308,7 +249,7 @@ public class MovieDetailsActivity extends AppCompatActivity {
                 .into(backdropImageView);
 
         loadTrailers(movie.getId());
-        loadReviews2(movie.getId());
+        loadReviews(movie.getId());
         setFavButtonState(movie.getId());
     }
 
@@ -338,8 +279,7 @@ public class MovieDetailsActivity extends AppCompatActivity {
     private void refreshFavoriteButton() {
         if (mIsFavoriteMovie) {
             favButtonFill.setVisibility(View.VISIBLE);
-        }
-        else  {
+        } else {
             favButtonFill.setVisibility(View.INVISIBLE);
         }
     }
@@ -351,6 +291,7 @@ public class MovieDetailsActivity extends AppCompatActivity {
     private void hidePB() {
         progressBar.setVisibility(View.INVISIBLE);
     }
+
     private void dismissNetworkErrorSnackbar() {
         if (mSnackbar != null) {
             if (mSnackbar.isShown()) {
@@ -358,6 +299,7 @@ public class MovieDetailsActivity extends AppCompatActivity {
             }
         }
     }
+
     private void showNetworkErrorSnackbar() {
 
         try {   //catch exception if snackbar is created outside of lifecycle
@@ -375,8 +317,7 @@ public class MovieDetailsActivity extends AppCompatActivity {
             if (!mSnackbar.isShownOrQueued()) {
                 mSnackbar.show();
             }
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             Log.e(TAG, "showNetworkErrorSnackbar: " + ex.getMessage());
         }
     }

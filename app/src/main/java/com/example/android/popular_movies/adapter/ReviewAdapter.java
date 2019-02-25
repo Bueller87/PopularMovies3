@@ -33,12 +33,9 @@ public class ReviewAdapter extends ArrayAdapter<MovieReview> {
             convertView = LayoutInflater.from(infContext).inflate(
                     R.layout.list_item_review, parent, false);
         }
-
         MovieReview movieReview = mMovieReviews.get(position);
-
         TextView authorTextView = convertView.findViewById(R.id.tv_review_author);
         authorTextView.setText(movieReview.getAuthor());
-
         TextView contentTextView = convertView.findViewById(R.id.tv_review_content);
         contentTextView.setText(movieReview.getContent());
 

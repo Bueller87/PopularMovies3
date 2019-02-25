@@ -19,7 +19,6 @@ public class MovieAdapter extends ArrayAdapter<Movie> {
     private Context mContext;
     private List<Movie> mMovies;
 
-
     public MovieAdapter(@NonNull Context context,  @NonNull List<Movie> movies) {
         super(context, 0, movies);
         mMovies = movies;
@@ -29,28 +28,18 @@ public class MovieAdapter extends ArrayAdapter<Movie> {
     @NonNull
     @Override
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
-
-
         Context infContext = getContext();
         if (convertView == null) {
             convertView = LayoutInflater.from(infContext).inflate(
                     R.layout.list_item_movie, parent, false);
         }
-
-
-
-
         Movie movie = mMovies.get(position);
         ImageView gridImageView = convertView.findViewById(R.id.iv_movie_poster);
         String posterPath = movie.getPosterFullPath();
-
-        Context fragContext = convertView.getContext();
         Picasso.with(mContext)
                 .load(posterPath)
                 .placeholder(R.drawable.film_poster_placeholder)
                 .into(gridImageView);
-
-
 
         return convertView;
     }
