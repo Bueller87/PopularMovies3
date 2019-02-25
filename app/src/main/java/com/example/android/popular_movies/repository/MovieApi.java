@@ -14,7 +14,7 @@ public interface MovieApi {
 
 
     String BASE_URL = "https://api.themoviedb.org/3/movie/";
-    String API_KEY = "";
+    String API_KEY = "";  //TODO: insert your API Key here
 
     @GET("popular")
     Call<DiscoverMoviesResult>getPopularMovies(@Query("api_key") String apiKey);

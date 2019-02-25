@@ -21,7 +21,7 @@ ext {
     androidArchVersion = '1.1.1'
     supportLibVersion = '27.1.1'
     retrofitVersion = '2.4.0'
-    butterknifeVersion = '10.1.0'
+    butterknifeVersion = '8.8.1'
     contraintLayoutVersion = '1.1.3'
     picassoVersion = '2.5.2'
     junitVersion = '4.12'

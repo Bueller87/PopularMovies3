@@ -39,6 +39,7 @@ public class MovieGridFragment extends Fragment {
     private ProgressBar mProgressBar;
     private View mFragmentView;
     private Snackbar mSnackbar;
+    private  String mNetworkErrorMsg;
     private MenuItem mPopularMenuItem;
     private MenuItem mHighestRatedMenuItem;
     private MenuItem mFavoriteMenuItem;
@@ -60,6 +61,7 @@ public class MovieGridFragment extends Fragment {
         // Inflate the layout for this fragment
         View fragmentView = inflater.inflate(R.layout.fragment_movie, container, false);
         mFragmentView = fragmentView;
+
         mGridView = fragmentView.findViewById(R.id.movies_grid);
         mProgressBar = fragmentView.findViewById(R.id.progressBar);
         setupViewModel();

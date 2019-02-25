@@ -8,6 +8,8 @@ import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.constraint.ConstraintLayout;
+import android.support.constraint.Constraints;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.ActionBar;
@@ -77,6 +79,8 @@ public class MovieDetailsActivity extends AppCompatActivity {
     private boolean mIsFavoriteMovie;
     public static final String TAG = MovieDetailsActivity.class.getSimpleName();
     public CoordinatorLayout mCoordinatorLayout;
+    public ConstraintLayout mConstraintLayout;
+    private String mNetworkErrorMsg;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -84,7 +88,8 @@ public class MovieDetailsActivity extends AppCompatActivity {
         setContentView(R.layout.activity_movie_details_constraint);
         ButterKnife.bind(this);
         mMovie = getIntent().getParcelableExtra(MovieGridFragment.MOVIE_OBJECT_TAG);
-        mCoordinatorLayout = (CoordinatorLayout) findViewById(R.id.myCoordinatorLayout);
+        mConstraintLayout = (ConstraintLayout) findViewById(R.id.activity_main_inference);
+        mNetworkErrorMsg = getString(R.string.err_no_internet_verbose);
         setupViewModel();
 
         LinearLayoutManager trailerLayoutManager = new LinearLayoutManager(this,
@@ -190,6 +195,7 @@ public class MovieDetailsActivity extends AppCompatActivity {
     private void checkDoneLoading() {
         if (mReviewsLoaded && mTrailersLoaded) {
             hidePB();
+            dismissNetworkErrorSnackbar();
         }
     }
 
@@ -304,7 +310,7 @@ public class MovieDetailsActivity extends AppCompatActivity {
 
         try {   //catch exception if snackbar is created outside of lifecycle
             mSnackbar = Snackbar
-                    .make(mCoordinatorLayout,
+                    .make(mConstraintLayout,
                             R.string.err_no_internet_verbose,
                             Snackbar.LENGTH_INDEFINITE)
                     .setAction(R.string.retry, new View.OnClickListener() {
