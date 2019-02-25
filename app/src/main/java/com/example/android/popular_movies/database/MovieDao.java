@@ -21,6 +21,9 @@ public interface MovieDao {
     @Query("SELECT * FROM movies WHERE id= :id")
     Movie findFavoriteMovie(int id);
 
+    @Query("SELECT COUNT(*) FROM movies WHERE id= :id")
+    LiveData<Integer> isFavoriteMovie(int id);
+
     @Insert
     void insertMovie(Movie movie);
 

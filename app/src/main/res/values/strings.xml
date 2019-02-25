@@ -25,6 +25,7 @@
     <string name="got_it">Got it</string>
     <string name="favorite_removed">Favorite Removed</string>
     <string name="favorite_added">Favorite Added</string>
+    <string name="retry">Retry</string>
 
 
 </resources>

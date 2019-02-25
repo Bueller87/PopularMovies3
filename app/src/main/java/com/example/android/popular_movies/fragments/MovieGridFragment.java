@@ -28,6 +28,7 @@ import com.example.android.popular_movies.R;
 import com.example.android.popular_movies.activities.MainActivity;
 import com.example.android.popular_movies.adapter.MovieAdapter;
 import com.example.android.popular_movies.database.AppDatabase;
+import com.example.android.popular_movies.model.DataWrapper;
 import com.example.android.popular_movies.viewmodel.MainViewModel;
 import com.example.android.popular_movies.model.DiscoverMoviesResult;
 import com.example.android.popular_movies.model.Movie;
@@ -50,8 +51,6 @@ public class MovieGridFragment extends Fragment {
     public final static String MOVIE_OBJECT_TAG = "MovieParcel";
     public final static String SAVED_SORT_OPTIONS = "SavedSortOptions";
     public final static String SAVED_SCROLL_POSITION = "SavedScrollPosition";
-    
-    /*@BindView(R.id.movies_grid)*/
     private GridView mGridView;
     private ProgressBar mProgressBar;
     private View mFragmentView;
@@ -59,19 +58,17 @@ public class MovieGridFragment extends Fragment {
     private MenuItem mPopularMenuItem;
     private MenuItem mHighestRatedMenuItem;
     private MenuItem mFavoriteMenuItem;
-    private AppDatabase mAppDatabase;
-
     private List<Movie> mMoviesList;
     private int mSortOptions = MainViewModel.FILTER_BY_MOST_POPULAR;
     private int mRestoredSearchOptions = MainViewModel.FILTER_BY_UNDEFINED;
     private int mScrollPosition = 0;
     private MainViewModel mMainViewModel;
-    private boolean mOnCreateCalled = false;
 
 
     public MovieGridFragment() {
         // Required empty public constructor
     }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -82,9 +79,6 @@ public class MovieGridFragment extends Fragment {
         mGridView = fragmentView.findViewById(R.id.movies_grid);
         mProgressBar = fragmentView.findViewById(R.id.progressBar);
         setupViewModel();
-
-        Log.e(MainActivity.DEBUG_TAG, "MovieGridFragment.CreateView()");
-        mOnCreateCalled = true;
         return fragmentView;
     }
 
@@ -147,10 +141,6 @@ public class MovieGridFragment extends Fragment {
         }
         return true;
     }
-
-
-
-
 
     @Override
     public void onResume() {
@@ -220,20 +210,20 @@ public class MovieGridFragment extends Fragment {
             mMainViewModel.getFavoriteMovies().observe(this, new Observer<List<Movie>>() {
                 @Override
                 public void onChanged(@Nullable List<Movie> movies) {
-                    Log.d(MainActivity.DEBUG_TAG, "Observer:Favorites onChanged Event");
+                    mProgressBar.setVisibility(View.INVISIBLE);
                     onLoadFavorites();
                 }
             });
 
             //movieListChanged
-            mMainViewModel.getMovieList().observe(this, new Observer<List<Movie>>() {
+            mMainViewModel.getMovieList().observe(this, new Observer<DataWrapper<List<Movie>>>() {
                 @Override
-                public void onChanged(@Nullable List<Movie> movies) {
+                public void onChanged(@Nullable DataWrapper<List<Movie>> movieCallData) {
+                    mProgressBar.setVisibility(View.INVISIBLE);
                     Log.d(MainActivity.DEBUG_TAG, "Observer:MovieList onChanged Event");
                     if (mSortOptions == MainViewModel.FILTER_BY_MOST_POPULAR ||
                             mSortOptions == MainViewModel.FILTER_BY_HIGHEST_RATED) {
-
-                        onLoadMovies(movies);
+                        onLoadMovies(movieCallData);
                     }
                 }
             });
@@ -242,48 +232,57 @@ public class MovieGridFragment extends Fragment {
 
     private void onLoadFavorites() {
         if (mSortOptions == MainViewModel.FILTER_BY_FAVORITE) {
+            mProgressBar.setVisibility(View.VISIBLE);
             createListAdapter(mMainViewModel.getFavoriteMovies().getValue());
         }
     }
 
-    private void onLoadMovies(List<Movie> movies) {
+    private void onLoadMovies(DataWrapper<List<Movie>> movieCallData) {
         if (mSortOptions == MainViewModel.FILTER_BY_MOST_POPULAR ||
                 mSortOptions == MainViewModel.FILTER_BY_HIGHEST_RATED) {
-            if (movies!= null) {
-                createListAdapter(movies);
-            } else {
-                Toast.makeText(getContext(), R.string.err_service_unavailable, Toast.LENGTH_LONG).show();
+            if (movieCallData.getDeviceNoConnectivity()) {
+                showNetworkErrorSnackbar();
+            } else if (movieCallData.getData() != null) {
+                createListAdapter(movieCallData.getData());
+            } else if (movieCallData.getErrMessage() != null) {
+                Toast.makeText(getContext(), movieCallData.getErrMessage(), Toast.LENGTH_LONG).show();
                 mSortOptions = mRestoredSearchOptions;
             }
         }
     }
+
     private void refreshData(int sortOptions) {
+        dismissNetworkErrorSnackbar();
         if (sortOptions == MainViewModel.FILTER_BY_FAVORITE) {
-            //mSortOptions = sortOptions;
             onLoadFavorites();
             Log.e(MainActivity.DEBUG_TAG, "Sort by Favorites");
         } else if (sortOptions == MainViewModel.FILTER_BY_MOST_POPULAR ||
                 sortOptions == MainViewModel.FILTER_BY_HIGHEST_RATED) {
-            //mSortOptions = sortOptions;
+            mProgressBar.setVisibility(View.VISIBLE);
             mMainViewModel.onMoviesRefreshNeeded(sortOptions);
         }
     }
-
+    private void dismissNetworkErrorSnackbar() {
+        if (mSnackbar != null) {
+            if (mSnackbar.isShown()) {
+                mSnackbar.dismiss();
+            }
+        }
+    }
     private void showNetworkErrorSnackbar() {
+
         mSnackbar = Snackbar
-                .make((CoordinatorLayout) mFragmentView, R.string.err_no_internet_verbose,
+                .make( mFragmentView, R.string.err_no_internet_verbose,
                         Snackbar.LENGTH_INDEFINITE)
-                .setAction(R.string.got_it, new View.OnClickListener() {
+                .setAction(R.string.retry, new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
                         mSnackbar.dismiss();
+                        refreshData(mSortOptions);
                     }
                 });
         if (!mSnackbar.isShownOrQueued()) {
             mSnackbar.show();
         }
     }
-
-
-
 }

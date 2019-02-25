@@ -24,7 +24,7 @@ public interface MovieApi {
 
     @GET("{movieId}/videos")
     Call<MovieTrailersResult>getMovieTrailers(@Path("movieId") Integer movieId, @Query("api_key") String apiKey);
-    ///movie/335983/videos?api_key=8137e80aa355d0aa982c215c3c009bdc
+
     @GET("{movieId}/reviews")
     Call<MovieReviewsResult>getMovieReviews(@Path("movieId") Integer movieId, @Query("api_key") String apiKey);
 }
