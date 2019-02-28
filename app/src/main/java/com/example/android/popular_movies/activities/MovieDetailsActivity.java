@@ -78,7 +78,6 @@ public class MovieDetailsActivity extends AppCompatActivity {
     private boolean mReviewsLoaded;
     private boolean mIsFavoriteMovie;
     public static final String TAG = MovieDetailsActivity.class.getSimpleName();
-    public CoordinatorLayout mCoordinatorLayout;
     public ConstraintLayout mConstraintLayout;
     private String mNetworkErrorMsg;
 
@@ -88,8 +87,6 @@ public class MovieDetailsActivity extends AppCompatActivity {
         setContentView(R.layout.activity_movie_details_constraint);
         ButterKnife.bind(this);
         mMovie = getIntent().getParcelableExtra(MovieGridFragment.MOVIE_OBJECT_TAG);
-        mConstraintLayout = (ConstraintLayout) findViewById(R.id.activity_main_inference);
-        mNetworkErrorMsg = getString(R.string.err_no_internet_verbose);
         setupViewModel();
 
         LinearLayoutManager trailerLayoutManager = new LinearLayoutManager(this,
@@ -310,7 +307,7 @@ public class MovieDetailsActivity extends AppCompatActivity {
 
         try {   //catch exception if snackbar is created outside of lifecycle
             mSnackbar = Snackbar
-                    .make(mConstraintLayout,
+                    .make( findViewById(R.id.activity_main_inference),
                             R.string.err_no_internet_verbose,
                             Snackbar.LENGTH_INDEFINITE)
                     .setAction(R.string.retry, new View.OnClickListener() {

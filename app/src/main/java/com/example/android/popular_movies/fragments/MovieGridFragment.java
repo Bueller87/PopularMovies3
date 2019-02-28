@@ -5,11 +5,15 @@ import android.app.Activity;
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -25,30 +29,34 @@ import com.example.android.popular_movies.activities.MovieDetailsActivity;
 import com.example.android.popular_movies.R;
 import com.example.android.popular_movies.activities.MainActivity;
 import com.example.android.popular_movies.adapter.MovieAdapter;
+import com.example.android.popular_movies.adapter.MovieGridAdapter;
+import com.example.android.popular_movies.callback.RecyclerClickListener;
 import com.example.android.popular_movies.model.DataWrapper;
 import com.example.android.popular_movies.viewmodel.MainViewModel;
 import com.example.android.popular_movies.model.Movie;
+
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class MovieGridFragment extends Fragment {
+public class MovieGridFragment extends Fragment implements MovieGridAdapter.ItemClickListener{
     public final static String MOVIE_OBJECT_TAG = "MovieParcel";
     public final static String SAVED_SORT_OPTIONS = "SavedSortOptions";
     public final static String SAVED_SCROLL_POSITION = "SavedScrollPosition";
-    private GridView mGridView;
+    private RecyclerView mGridRecyclerView;
     private ProgressBar mProgressBar;
     private View mFragmentView;
     private Snackbar mSnackbar;
-    private  String mNetworkErrorMsg;
     private MenuItem mPopularMenuItem;
     private MenuItem mHighestRatedMenuItem;
     private MenuItem mFavoriteMenuItem;
     private List<Movie> mMoviesList;
     private int mSortOptions = MainViewModel.FILTER_BY_MOST_POPULAR;
     private int mRestoredSearchOptions = MainViewModel.FILTER_BY_UNDEFINED;
-    private int mScrollPosition = 0;
+    private Parcelable mRecyclerViewState;
+    //private int mScrollPosition = 0;
     private MainViewModel mMainViewModel;
-
+    private  MovieGridAdapter movieAdapter;
 
     public MovieGridFragment() {
         // Required empty public constructor
@@ -61,13 +69,27 @@ public class MovieGridFragment extends Fragment {
         // Inflate the layout for this fragment
         View fragmentView = inflater.inflate(R.layout.fragment_movie, container, false);
         mFragmentView = fragmentView;
-
-        mGridView = fragmentView.findViewById(R.id.movies_grid);
         mProgressBar = fragmentView.findViewById(R.id.progressBar);
+        setupRecyclerView();
         setupViewModel();
         return fragmentView;
     }
 
+    private void setupRecyclerView() {
+        mGridRecyclerView = mFragmentView.findViewById(R.id.movies_grid);
+        mGridRecyclerView.addOnItemTouchListener(new RecyclerClickListener(getActivity(), new RecyclerClickListener.OnItemClickListener() {
+            @Override
+            public void onItemClick(View view, int position) {
+                Intent intent = new Intent(getActivity(), MovieDetailsActivity.class);
+                intent.putExtra(MovieGridFragment.MOVIE_OBJECT_TAG, mMoviesList.get(position));
+                startActivity(intent);
+            }
+        }));
+        mMoviesList = new ArrayList<>();
+        movieAdapter = new MovieGridAdapter(Objects.requireNonNull(getActivity()), mMoviesList);
+        //movieAdapter.setClickListener(this);
+        mGridRecyclerView.setAdapter(movieAdapter);
+    }
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.menu_sort, menu);
@@ -121,8 +143,6 @@ public class MovieGridFragment extends Fragment {
         if (sortOptions != mSortOptions) {
             mRestoredSearchOptions = mSortOptions;  //restore sort options in case of error
             mSortOptions = sortOptions;
-
-            mScrollPosition = 0;
             refreshData(mSortOptions);
         }
         return true;
@@ -136,7 +156,7 @@ public class MovieGridFragment extends Fragment {
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
         outState.putInt(SAVED_SORT_OPTIONS, mSortOptions);
-        outState.putInt(SAVED_SCROLL_POSITION, mGridView.getFirstVisiblePosition());
+        mRecyclerViewState = mGridRecyclerView.getLayoutManager().onSaveInstanceState();
         super.onSaveInstanceState(outState);
     }
 
@@ -145,15 +165,20 @@ public class MovieGridFragment extends Fragment {
         super.onViewStateRestored(savedInstanceState);
         if (savedInstanceState != null) {
             mSortOptions = savedInstanceState.getInt(SAVED_SORT_OPTIONS);
-            mScrollPosition = savedInstanceState.getInt(SAVED_SCROLL_POSITION);
+            mGridRecyclerView.getLayoutManager().onRestoreInstanceState(mRecyclerViewState);
         }
     }
+    @Override
+    public void onItemClick(View view, int position) {
+        Intent intent = new Intent(getActivity(), MovieDetailsActivity.class);
+        intent.putExtra(MovieGridFragment.MOVIE_OBJECT_TAG, mMoviesList.get(position));
+        startActivity(intent);
+    }
 
-    private void createListAdapter(List<Movie> moviesList) {
-        MovieAdapter movieAdapter = new MovieAdapter(Objects.requireNonNull(getActivity()), moviesList);
+    private void updateMovieList(List<Movie> moviesList) {
         mMoviesList = moviesList;
-        mGridView.setAdapter(movieAdapter);
-        mGridView.smoothScrollToPosition(mScrollPosition);
+        movieAdapter.updateMovieList(mMoviesList);
+
         mProgressBar.setVisibility(View.INVISIBLE);
         if (mSortOptions == MainViewModel.FILTER_BY_MOST_POPULAR) {
             setActionBarTitle(getResources().getString(R.string.popular_movies));
@@ -163,15 +188,7 @@ public class MovieGridFragment extends Fragment {
             setActionBarTitle(getResources().getString(R.string.favorite_movies));
         }
 
-        mGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                //TODO launch Details View Activity
-                Intent intent = new Intent(getActivity(), MovieDetailsActivity.class);
-                intent.putExtra(MovieGridFragment.MOVIE_OBJECT_TAG, mMoviesList.get(i));
-                startActivity(intent);
-            }
-        });
+
 
     }
 
@@ -215,7 +232,7 @@ public class MovieGridFragment extends Fragment {
     private void onLoadFavorites() {
         if (mSortOptions == MainViewModel.FILTER_BY_FAVORITE) {
             mProgressBar.setVisibility(View.VISIBLE);
-            createListAdapter(mMainViewModel.getFavoriteMovies().getValue());
+            updateMovieList(mMainViewModel.getFavoriteMovies().getValue());
         }
     }
 
@@ -225,7 +242,7 @@ public class MovieGridFragment extends Fragment {
             if (movieCallData.getDeviceNoConnectivity()) {
                 showNetworkErrorSnackbar();
             } else if (movieCallData.getData() != null) {
-                createListAdapter(movieCallData.getData());
+                updateMovieList(movieCallData.getData());
             } else if (movieCallData.getErrMessage() != null) {
                 Toast.makeText(getContext(), movieCallData.getErrMessage(), Toast.LENGTH_LONG).show();
                 mSortOptions = mRestoredSearchOptions;
@@ -266,4 +283,6 @@ public class MovieGridFragment extends Fragment {
             mSnackbar.show();
         }
     }
+
+
 }
