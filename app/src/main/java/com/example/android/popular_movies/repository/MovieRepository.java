@@ -5,6 +5,7 @@ import android.arch.lifecycle.MutableLiveData;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
+import com.example.android.popular_movies.BuildConfig;
 import com.example.android.popular_movies.activities.MainActivity;
 import com.example.android.popular_movies.model.DataWrapper;
 import com.example.android.popular_movies.model.DiscoverMoviesResult;
@@ -48,9 +49,9 @@ public class MovieRepository {
     }
 
     public LiveData<DataWrapper<List<Movie>>> getMovieList(int sortOptions) {
-        Call<DiscoverMoviesResult> movieListCall = mMovieApi.getPopularMovies(MovieApi.API_KEY);
+        Call<DiscoverMoviesResult> movieListCall = mMovieApi.getPopularMovies(BuildConfig.MOVIE_API_KEY);
         if (sortOptions == MainViewModel.FILTER_BY_HIGHEST_RATED) {
-            movieListCall = mMovieApi.getTopRatedMovies(MovieApi.API_KEY);
+            movieListCall = mMovieApi.getTopRatedMovies(BuildConfig.MOVIE_API_KEY);
         }
         movieListCall.enqueue(new Callback<DiscoverMoviesResult>() {
             @Override
@@ -72,7 +73,7 @@ public class MovieRepository {
     }
 
     public LiveData<DataWrapper<List<MovieTrailer>>> getTrailerList(Integer movieId) {
-        Call<MovieTrailersResult> getTrailers  = mMovieApi.getMovieTrailers(movieId, MovieApi.API_KEY);
+        Call<MovieTrailersResult> getTrailers  = mMovieApi.getMovieTrailers(movieId, BuildConfig.MOVIE_API_KEY);
         getTrailers.enqueue(new Callback<MovieTrailersResult>() {
             @Override
             public void onResponse(@NonNull Call<MovieTrailersResult> call, @NonNull Response<MovieTrailersResult> response) {
@@ -93,7 +94,7 @@ public class MovieRepository {
     }
 
     public LiveData<DataWrapper<List<MovieReview>>> getReviewList(Integer movieId) {
-        Call<MovieReviewsResult> getReviews  = mMovieApi.getMovieReviews(movieId, MovieApi.API_KEY);
+        Call<MovieReviewsResult> getReviews  = mMovieApi.getMovieReviews(movieId, BuildConfig.MOVIE_API_KEY);
         getReviews.enqueue(new Callback<MovieReviewsResult>() {
             @Override
             public void onResponse(@NonNull Call<MovieReviewsResult> call, @NonNull Response<MovieReviewsResult> response) {

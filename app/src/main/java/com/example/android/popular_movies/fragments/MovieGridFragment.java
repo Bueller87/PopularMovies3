@@ -12,6 +12,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -39,10 +40,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import jp.wasabeef.recyclerview.animators.SlideInUpAnimator;
+
+import static com.example.android.popular_movies.activities.MovieDetailsActivity.TAG;
+
 public class MovieGridFragment extends Fragment implements MovieGridAdapter.ItemClickListener{
     public final static String MOVIE_OBJECT_TAG = "MovieParcel";
     public final static String SAVED_SORT_OPTIONS = "SavedSortOptions";
-    public final static String SAVED_SCROLL_POSITION = "SavedScrollPosition";
     private RecyclerView mGridRecyclerView;
     private ProgressBar mProgressBar;
     private View mFragmentView;
@@ -57,13 +61,16 @@ public class MovieGridFragment extends Fragment implements MovieGridAdapter.Item
     //private int mScrollPosition = 0;
     private MainViewModel mMainViewModel;
     private  MovieGridAdapter movieAdapter;
-
+// initialise loading state
+    private boolean  mIsLoading = false;
+    private boolean  mIsLastPage = false;
+    public static final int PAGE_SIZE = 20;
     public MovieGridFragment() {
         // Required empty public constructor
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         setHasOptionsMenu(true);
         // Inflate the layout for this fragment
@@ -83,12 +90,55 @@ public class MovieGridFragment extends Fragment implements MovieGridAdapter.Item
                 Intent intent = new Intent(getActivity(), MovieDetailsActivity.class);
                 intent.putExtra(MovieGridFragment.MOVIE_OBJECT_TAG, mMoviesList.get(position));
                 startActivity(intent);
+
+                FragmentActivity fa = getActivity();
+                if (fa != null) {
+                   /* fa.overridePendingTransition(
+                            android.R.anim.fade_in, android.R.anim.fade_out);*/
+                    fa.overridePendingTransition(
+                            R.anim.slide_in_right, R.anim.slide_out_left);
+                }
             }
         }));
+
+        RecyclerView.OnScrollListener recyclerViewOnScrollListener = new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+                super.onScrollStateChanged(recyclerView, newState);
+            }
+
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+                GridLayoutManager layoutManager = (GridLayoutManager)mGridRecyclerView.getLayoutManager();
+                int visibleItemCount =  layoutManager.getChildCount();
+                int totalItemCount =  layoutManager.getItemCount();
+                int firstVisibleItemPosition =  layoutManager.findFirstVisibleItemPosition();
+
+                if (!mIsLoading && !mIsLastPage) {
+                    if ((visibleItemCount + firstVisibleItemPosition) >= totalItemCount
+                            && firstVisibleItemPosition >= 0
+                            && totalItemCount >= PAGE_SIZE) {
+                        loadMoreItems();
+                    }
+                }
+            }
+        };
+
+
+
         mMoviesList = new ArrayList<>();
         movieAdapter = new MovieGridAdapter(Objects.requireNonNull(getActivity()), mMoviesList);
         //movieAdapter.setClickListener(this);
+        mGridRecyclerView.setItemAnimator(new SlideInUpAnimator());
         mGridRecyclerView.setAdapter(movieAdapter);
+        // Pagination
+        mGridRecyclerView.addOnScrollListener(recyclerViewOnScrollListener);
+    }
+
+    private void loadMoreItems() {
+        Log.d(TAG, "loadMoreItems: ");
+        mIsLoading = true;
     }
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
@@ -170,13 +220,14 @@ public class MovieGridFragment extends Fragment implements MovieGridAdapter.Item
     }
     @Override
     public void onItemClick(View view, int position) {
-        Intent intent = new Intent(getActivity(), MovieDetailsActivity.class);
+    /*    Intent intent = new Intent(getActivity(), MovieDetailsActivity.class);
         intent.putExtra(MovieGridFragment.MOVIE_OBJECT_TAG, mMoviesList.get(position));
-        startActivity(intent);
+        startActivity(intent);*/
     }
 
     private void updateMovieList(List<Movie> moviesList) {
         mMoviesList = moviesList;
+        mIsLoading = false;
         movieAdapter.updateMovieList(mMoviesList);
 
         mProgressBar.setVisibility(View.INVISIBLE);
@@ -187,9 +238,6 @@ public class MovieGridFragment extends Fragment implements MovieGridAdapter.Item
         } else if (mSortOptions == MainViewModel.FILTER_BY_FAVORITE) {
             setActionBarTitle(getResources().getString(R.string.favorite_movies));
         }
-
-
-
     }
 
     public void setActionBarTitle(String title) {

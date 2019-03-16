@@ -63,12 +63,17 @@ public class MovieDetailsActivity extends AppCompatActivity {
     RecyclerView trailersRecyclerView;
     @BindView(R.id.tv_no_reviews)
     TextView noReviewsTextView;
+    @BindView(R.id.tv_reviews_label)
+    TextView reviewsLabelTextView;
     @BindView(R.id.tv_no_trailers)
     TextView noTrailersTextView;
+    @BindView(R.id.tvw_trailers_label)
+    TextView trailerLabelTextView;
     @BindView(R.id.iv_favorite_fill)
     ImageView favButtonFill;
     @BindView(R.id.progressBar)
     ProgressBar progressBar;
+    //@BindView(R.id.co)
 
     private Snackbar mSnackbar;
     private List<MovieTrailer> mMovieTrailers;
@@ -88,7 +93,8 @@ public class MovieDetailsActivity extends AppCompatActivity {
         ButterKnife.bind(this);
         mMovie = getIntent().getParcelableExtra(MovieGridFragment.MOVIE_OBJECT_TAG);
         setupViewModel();
-
+        reviewsLabelTextView.setText(getString(R.string.reviews_label, 0));
+        trailerLabelTextView.setText(getString(R.string.trailers_label, 0));
         LinearLayoutManager trailerLayoutManager = new LinearLayoutManager(this,
                 LinearLayoutManager.HORIZONTAL, false);
         trailersRecyclerView.setLayoutManager(trailerLayoutManager);
@@ -115,6 +121,14 @@ public class MovieDetailsActivity extends AppCompatActivity {
         if (mMovie != null) {
             refreshView(mMovie);
         }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        overridePendingTransition(
+                android.R.anim.slide_in_left, android.R.anim.slide_out_right
+        ); //R.anim.slide_out_left);
     }
 
     @Override
@@ -203,21 +217,26 @@ public class MovieDetailsActivity extends AppCompatActivity {
             Utility.setListViewHeightBasedOnChildren(reviewsRecyclerView);
             noReviewsTextView.setVisibility(View.GONE);
             reviewsRecyclerView.setVisibility(View.VISIBLE);
+            reviewsLabelTextView.setText(getString(R.string.reviews_label, movieReviews.size()));
         } else {
             noReviewsTextView.setVisibility(View.VISIBLE);
             reviewsRecyclerView.setVisibility(View.GONE);
+            reviewsLabelTextView.setText(getString(R.string.reviews_label, 0));
         }
     }
 
     private void createTrailersListAdapter(List<MovieTrailer> movieTrailers) {
+
         if (movieTrailers != null && movieTrailers.size() > 0) {
             TrailerAdapter trailerAdapter = new TrailerAdapter(this, movieTrailers);
             trailersRecyclerView.setAdapter(trailerAdapter);
             noTrailersTextView.setVisibility(View.GONE);
             trailersRecyclerView.setVisibility(View.VISIBLE);
+            trailerLabelTextView.setText(getString(R.string.trailers_label, movieTrailers.size()));
         } else {
             noTrailersTextView.setVisibility(View.VISIBLE);
             trailersRecyclerView.setVisibility(View.GONE);
+            trailerLabelTextView.setText(getString(R.string.trailers_label, 0));
         }
     }
 

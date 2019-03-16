@@ -1,11 +1,11 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 27
+    compileSdkVersion 28
     defaultConfig {
         applicationId "com.example.android.popular_movies"
         minSdkVersion 21
-        targetSdkVersion 27
+        targetSdkVersion 28
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
@@ -16,10 +16,14 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+
+    buildTypes.each {
+        it.buildConfigField 'String', 'MOVIE_API_KEY', MyMovieApiKey
+    }
 }
 ext {
     androidArchVersion = '1.1.1'
-    supportLibVersion = '27.1.1'
+    supportLibVersion = '28.0.0'
     retrofitVersion = '2.4.0'
     butterknifeVersion = '8.8.1'
     contraintLayoutVersion = '1.1.3'
@@ -52,9 +56,12 @@ dependencies {
     // Live Data
     implementation "android.arch.lifecycle:extensions:${androidArchVersion}"
     annotationProcessor "android.arch.lifecycle:compiler:${androidArchVersion}"
-
+    implementation 'jp.wasabeef:recyclerview-animators:2.0.0'
+    //PaginationRecyclerView
+    implementation 'com.github.JDroidCoder:PaginationRecyclerView:v1.0.0'
     // Testing
     testImplementation "junit:junit:${junitVersion}"
     androidTestImplementation "com.android.support.test:runner:${testRunnerVersion}"
     androidTestImplementation "com.android.support.test.espresso:espresso-core:${espressoVersion}"
+
 }

@@ -5,7 +5,10 @@ import android.view.ViewGroup;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 
-public class Utility {
+//This class will never be extended
+public final class Utility {
+    private Utility() {} //This class will never be instantiated
+
     public static void setListViewHeightBasedOnChildren(ListView listView) {
         ListAdapter listAdapter = listView.getAdapter();
         if (listAdapter == null) {

@@ -18,8 +18,8 @@
     <string name="err_no_internet_verbose">Please check your network connection and try again.</string>
     <string name="err_service_unavailable">Movie Service Unavailable</string>
     <string name="movie_poster">Movie Poster</string>
-    <string name="reviews_label">Reviews</string>
-    <string name="trailers_label">Trailers</string>
+    <string name="reviews_label">Reviews (%d)</string>
+    <string name="trailers_label">Trailers (%d)</string>
     <string name="no_reviews">No Reviews</string>
     <string name="no_trailers">No Trailers</string>
     <string name="got_it">Got it</string>
