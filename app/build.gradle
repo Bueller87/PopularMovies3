@@ -18,7 +18,7 @@ android {
     }
 
     buildTypes.each {
-        it.buildConfigField 'String', 'MOVIE_API_KEY', MyMovieApiKey
+        it.buildConfigField 'String', 'MOVIE_API_KEY', TheMovieDbApiKey
     }
 }
 ext {

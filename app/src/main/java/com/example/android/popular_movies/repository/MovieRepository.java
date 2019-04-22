@@ -26,6 +26,8 @@ import retrofit2.converter.gson.GsonConverterFactory;
 import com.example.android.popular_movies.R;
 
 public class MovieRepository {
+    private static String BASE_URL = "https://api.themoviedb.org/3/movie/";
+    private static String API_KEY = BuildConfig.MOVIE_API_KEY;
     private MovieApi mMovieApi;
     private static MovieRepository sMovieRepository;
     private final MutableLiveData<DataWrapper<List<Movie>>> mMovieListLiveData = new MutableLiveData<>();
@@ -34,7 +36,7 @@ public class MovieRepository {
 
     private MovieRepository() {
         Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl(mMovieApi.BASE_URL)
+                .baseUrl(BASE_URL)
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
 
@@ -49,9 +51,9 @@ public class MovieRepository {
     }
 
     public LiveData<DataWrapper<List<Movie>>> getMovieList(int sortOptions) {
-        Call<DiscoverMoviesResult> movieListCall = mMovieApi.getPopularMovies(BuildConfig.MOVIE_API_KEY);
+        Call<DiscoverMoviesResult> movieListCall = mMovieApi.getPopularMovies(API_KEY);
         if (sortOptions == MainViewModel.FILTER_BY_HIGHEST_RATED) {
-            movieListCall = mMovieApi.getTopRatedMovies(BuildConfig.MOVIE_API_KEY);
+            movieListCall = mMovieApi.getTopRatedMovies(API_KEY);
         }
         movieListCall.enqueue(new Callback<DiscoverMoviesResult>() {
             @Override
@@ -73,7 +75,7 @@ public class MovieRepository {
     }
 
     public LiveData<DataWrapper<List<MovieTrailer>>> getTrailerList(Integer movieId) {
-        Call<MovieTrailersResult> getTrailers  = mMovieApi.getMovieTrailers(movieId, BuildConfig.MOVIE_API_KEY);
+        Call<MovieTrailersResult> getTrailers  = mMovieApi.getMovieTrailers(movieId, API_KEY);
         getTrailers.enqueue(new Callback<MovieTrailersResult>() {
             @Override
             public void onResponse(@NonNull Call<MovieTrailersResult> call, @NonNull Response<MovieTrailersResult> response) {
@@ -94,7 +96,7 @@ public class MovieRepository {
     }
 
     public LiveData<DataWrapper<List<MovieReview>>> getReviewList(Integer movieId) {
-        Call<MovieReviewsResult> getReviews  = mMovieApi.getMovieReviews(movieId, BuildConfig.MOVIE_API_KEY);
+        Call<MovieReviewsResult> getReviews  = mMovieApi.getMovieReviews(movieId, API_KEY);
         getReviews.enqueue(new Callback<MovieReviewsResult>() {
             @Override
             public void onResponse(@NonNull Call<MovieReviewsResult> call, @NonNull Response<MovieReviewsResult> response) {

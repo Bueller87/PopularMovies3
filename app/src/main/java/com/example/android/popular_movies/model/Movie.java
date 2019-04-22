@@ -150,15 +150,11 @@ public class Movie implements Parcelable {
     }
 
     public String getPosterFullPath() {
-        //TODO as api to retrieve base url from "Get API Configuration"
-        //https://developers.themoviedb.org/3/configuration/get-api-configuration
         String baseUrl = "https://image.tmdb.org/t/p/w185";
         return baseUrl + getPosterPath();
     }
 
     public String getBackdropFullPath() {
-        //TODO as api to retrieve base url from "Get API Configuration"
-        //https://developers.themoviedb.org/3/configuration/get-api-configuration
         String baseUrl = "https://image.tmdb.org/t/p/w780";
         return baseUrl + getBackdropPath();
     }

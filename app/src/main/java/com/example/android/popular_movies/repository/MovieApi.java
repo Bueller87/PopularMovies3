@@ -14,8 +14,7 @@ import retrofit2.http.Query;
 public interface MovieApi {
 
 
-    String BASE_URL = "https://api.themoviedb.org/3/movie/";
-    String API_KEY = "";  //TODO: assign your API Key here
+
 
     @GET("popular")
     Call<DiscoverMoviesResult>getPopularMovies(@Query("api_key") String apiKey);
